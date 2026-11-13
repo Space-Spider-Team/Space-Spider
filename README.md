@@ -1,4 +1,4 @@
-# Meridian: Crew Health Monitor
+# SageCare: Crew Health Monitor
 
 > An offline-first health self-assessment tool for astronauts on deep-space missions. It helps non-doctors measure, understand and act on their own health when the ground is minutes away or unreachable.
 
