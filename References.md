@@ -16,3 +16,11 @@ https://www.esa.int/articles/diet-tracker-in-space
 https://www.nasa.gov/ochmo/food-in-space/
 https://www.nasa.gov/podcasts/houston-we-have-a-podcast/diet-like-an-astronaut/
 https://www.nasa.gov/podcasts/houston-we-have-a-podcast/eat-like-a-martian/
+NASA — The Five Hazards of Human Spaceflight
+NASA Human Research Roadmap — Risks 
+NASA Environmental Data App
+NASA RadLab Data API
+NASA Behavioral Core Measures
+NASA-STD-3001 Volume 1
+NASA-STD-3001 Volume 2, Revision F 
+Radiation Risk Mitigation in Human Space Exploration (2026)
