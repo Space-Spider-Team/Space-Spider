@@ -55,6 +55,7 @@ function getCycle(date: Date) {
 }
 
 function ClockPanel({ now }: { now: Date }) {
+  const cycle = getCycle(now);
   const metSeconds = Math.floor((now.getTime() - Date.UTC(2026, 4, 15)) / 1000);
   const metDays = Math.max(0, Math.floor(metSeconds / 86400));
   const metHours = Math.floor((metSeconds % 86400) / 3600);
@@ -90,7 +91,7 @@ export default function Home() {
   const [manualTheme, setManualTheme] = useState<string | null>(null);
   const [selectedProcedure, setSelectedProcedure] = useState<(typeof procedures)[number] | null>(null);
   const [mobileNav, setMobileNav] = useState(false);
-  useEffect(() => { const tick = () => setNow(new Date()); tick(); const timer = window.setInterval(tick, 1000); return () => window.clearInterval(timer); }, []);
+  useEffect(() => { const timer = window.setInterval(() => setNow(new Date()), 1000); return () => window.clearInterval(timer); }, []);
   const cycle = now ? getCycle(now) : { name: "Night", theme: "night", icon: "moon" as IconName };
   const theme = manualTheme ?? cycle.theme;
   const filteredTasks = useMemo(() => tasks.filter((task) => (filter === "All tasks" || (filter === "Completed" ? task.complete : !task.complete)) && `${task.title} ${task.source}`.toLowerCase().includes(search.toLowerCase())), [filter, search]);
