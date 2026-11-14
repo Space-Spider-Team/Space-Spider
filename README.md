@@ -10,13 +10,7 @@ References are kept in [REFERENCES.md](REFERENCES.md).
 
 ## 1. Problem statement
 
-Long-duration missions expose crews to the five hazards mapped by NASA's Human Research Program: **space radiation, isolation and confinement, distance from Earth, altered gravity, and hostile closed environments.** These can contribute to slow, easily missed changes in bone and muscle, the cardiovascular system, eyes, the immune system, sleep, nutrition, body mass, fluid balance and behavioral health.
-
-On a Mars transit, one-way communication delay can reach about 4 to 24 minutes. The crew carries more of the responsibility for monitoring their own health, and astronauts are not doctors. Slow changes are hard to see in your own body, and daily manual self-reporting is unreliable under workload and fatigue.
-
-**The question we address:**
-
-> How can crew members **understand their measurements, notice changes, and review them in the context of mission-approved procedures**, with minimal manual entry and without depending on a live link to Earth?
+To develop an autonomous health-monitoring system that helps astronauts track, interpret and identify changes in their health during long-duration space missions.
 
 ## 2. Solution overview
 
