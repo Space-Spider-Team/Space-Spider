@@ -23,7 +23,7 @@ type SupabaseStateRow = { profile_id: string; domain: StateDomain; payload: unkn
 type SupabaseCacheRow = { payload: unknown; fetched_at: string };
 
 function supabaseConfig(): SupabaseConfig | null {
-  const url = process.env.SUPABASE_URL?.trim().replace(/\/+$/, "");
+  const url = (process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL)?.trim().replace(/\/+$/, "");
   const key = process.env.SUPABASE_SECRET_KEY?.trim() || process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
   if (!url && !key) return null;
   if (!url || !key) throw new Error("Set both SUPABASE_URL and SUPABASE_SECRET_KEY to enable Supabase storage.");
@@ -36,6 +36,10 @@ function supabaseConfig(): SupabaseConfig | null {
     throw new Error("SUPABASE_URL must be a valid HTTPS project URL.");
   }
   return { url, key, legacyJwtKey: key.startsWith("eyJ") };
+}
+
+export function storageBackend(): "local" | "supabase" {
+  return process.env.SUPABASE_URL?.trim() || process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ? "supabase" : "local";
 }
 
 async function supabaseRequest<T>(table: string, params: URLSearchParams, init?: RequestInit): Promise<T> {
@@ -58,6 +62,41 @@ async function supabaseRequest<T>(table: string, params: URLSearchParams, init?:
   const text = await response.text();
   if (!text) return undefined as T;
   return JSON.parse(text) as T;
+}
+
+export async function inspectStorageTables(): Promise<{
+  storage: "local" | "supabase";
+  tables: Record<"data_sources" | "app_state" | "nasa_search_cache", number>;
+}> {
+  const tableNames = ["data_sources", "app_state", "nasa_search_cache"] as const;
+  const config = supabaseConfig();
+  if (!config) {
+    const db = openDatabase();
+    const tables = Object.fromEntries(tableNames.map((table) => [
+      table,
+      Number(db.prepare(`SELECT COUNT(*) AS count FROM ${table}`).get()?.count ?? 0),
+    ])) as Record<(typeof tableNames)[number], number>;
+    return { storage: "local", tables };
+  }
+
+  const counts = await Promise.all(tableNames.map(async (table) => {
+    const headers = new Headers({ apikey: config.key, Prefer: "count=exact", Accept: "application/json" });
+    if (config.legacyJwtKey) headers.set("Authorization", `Bearer ${config.key}`);
+    const params = new URLSearchParams({ select: "*", limit: "0" });
+    const response = await fetch(`${config.url}/rest/v1/${table}?${params.toString()}`, {
+      method: "HEAD",
+      headers,
+      cache: "no-store",
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!response.ok) throw new Error(`Supabase ${table} check failed (${response.status}).`);
+    const contentRange = response.headers.get("content-range");
+    const count = Number(contentRange?.split("/").at(-1));
+    if (!Number.isInteger(count) || count < 0) throw new Error(`Supabase ${table} did not return a row count.`);
+    return [table, count] as const;
+  }));
+
+  return { storage: "supabase", tables: Object.fromEntries(counts) as Record<(typeof tableNames)[number], number> };
 }
 
 function emptyStates(): Record<StateDomain, Record<string, unknown>> {
@@ -168,15 +207,16 @@ export async function readStates(): Promise<Record<StateDomain, Record<string, u
     result[row.domain][row.profile_id] = payload;
   }
 
-  // Bring forward the old local database on the first Supabase read, before clients save defaults.
-  if (rows.length === 0) {
-    const legacyStates = readLegacySqliteStates();
-    for (const domain of ["crew", "monitoring", "settings"] as const) {
-      const states = legacyStates[domain];
-      if (Object.keys(states).length) {
-        await writeStatesToSupabase(domain, states, "legacy-migration");
-        result[domain] = states;
-      }
+  // Merge missing local rows individually so setup-check or partial remote rows
+  // never prevent an existing SQLite profile from being migrated.
+  const legacyStates = readLegacySqliteStates();
+  for (const domain of ["crew", "monitoring", "settings"] as const) {
+    const missing = Object.fromEntries(
+      Object.entries(legacyStates[domain]).filter(([profileId]) => !(profileId in result[domain])),
+    );
+    if (Object.keys(missing).length) {
+      await writeStatesToSupabase(domain, missing, "legacy-migration");
+      Object.assign(result[domain], missing);
     }
   }
   return result;
@@ -235,8 +275,20 @@ export async function readNasaCache(queryKey: string): Promise<{ payload: unknow
       limit: "1",
     }));
     const row = rows[0];
-    return row ? { payload: row.payload, fetchedAt: row.fetched_at } : null;
+    if (row) return { payload: row.payload, fetchedAt: row.fetched_at };
+
+    // Move a previously cached NASA response to Supabase on first access.
+    const legacy = readNasaCacheSqlite(queryKey);
+    if (legacy) {
+      await writeNasaCacheSupabase(queryKey, legacy.payload, legacy.fetchedAt);
+      return legacy;
+    }
+    return null;
   }
+  return readNasaCacheSqlite(queryKey);
+}
+
+function readNasaCacheSqlite(queryKey: string): { payload: unknown; fetchedAt: string } | null {
   const row = openDatabase().prepare(
     "SELECT payload_json, fetched_at FROM nasa_search_cache WHERE query_key = ?",
   ).get(queryKey);
@@ -248,13 +300,17 @@ export async function readNasaCache(queryKey: string): Promise<{ payload: unknow
   }
 }
 
+async function writeNasaCacheSupabase(queryKey: string, payload: unknown, fetchedAt: string): Promise<void> {
+  await supabaseRequest<void>("nasa_search_cache", new URLSearchParams({ on_conflict: "query_key" }), {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Prefer: "resolution=merge-duplicates,return=minimal" },
+    body: JSON.stringify({ query_key: queryKey, payload, fetched_at: fetchedAt, source_id: "nasa-osdr" }),
+  });
+}
+
 export async function writeNasaCache(queryKey: string, payload: unknown): Promise<void> {
   if (supabaseConfig()) {
-    await supabaseRequest<void>("nasa_search_cache", new URLSearchParams({ on_conflict: "query_key" }), {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Prefer: "resolution=merge-duplicates,return=minimal" },
-      body: JSON.stringify({ query_key: queryKey, payload, fetched_at: new Date().toISOString(), source_id: "nasa-osdr" }),
-    });
+    await writeNasaCacheSupabase(queryKey, payload, new Date().toISOString());
     return;
   }
   openDatabase().prepare(`

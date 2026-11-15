@@ -14,13 +14,17 @@
 
 6. García, H., James, J., & Tsuji, J. (n.d.). *Modeling of blood lead levels in astronauts exposed to lead from microgravity-accelerated bone loss* (Poster Board #533; Abstract #632d). NASA Technical Reports Server. https://ntrs.nasa.gov/api/citations/20140003569/downloads/20140003569.pdf
 
-7. Douglas, G. L., DeKerlegand, D., Dlouhy, H., et al. (2022). Impact of diet on human nutrition, immune response, gut microbiome, and cognition in an isolated and confined mission environment. *Scientific Reports, 12*, 20847. https://doi.org/10.1038/s41598-022-21927-5
+7. Graf, A. (2026, March 6). *Artemis II: What's on the menu?* NASA. https://www.nasa.gov/missions/artemis/artemis-2/artemis-ii-whats-on-the-menu/
 
-8. Hernández-López, I., Abadias, M., Prieto-Santiago, V., Chic-Blanco, Á., Ortiz-Solà, J., & Aguiló-Aguayo, I. (2024). Exploring the nutritional potential of microalgae in the formulation of bakery products. *Foods, 13*, 84. https://doi.org/10.3390/foods13010084
+8. Douglas, G. L., DeKerlegand, D., Dlouhy, H., et al. (2022). Impact of diet on human nutrition, immune response, gut microbiome, and cognition in an isolated and confined mission environment. *Scientific Reports, 12*, 20847. https://doi.org/10.1038/s41598-022-21927-5
+
+9. Hernández-López, I., Abadias, M., Prieto-Santiago, V., Chic-Blanco, Á., Ortiz-Solà, J., & Aguiló-Aguayo, I. (2024). Exploring the nutritional potential of microalgae in the formulation of bakery products. *Foods, 13*, 84. https://doi.org/10.3390/foods13010084
 
    - [Full-text article (PMC)](https://pmc.ncbi.nlm.nih.gov/articles/PMC10778747/)
 
-9. Perchonok, M., Douglas, G., & Cooper, M. (2012). *Risk of performance decrement and crew illness due to an inadequate food system* (Evidence Report AFT). NASA Lyndon B. Johnson Space Center. https://humanresearchroadmap.nasa.gov/evidence/reports/food.pdf
+10. Perchonok, M., Douglas, G., & Cooper, M. (2012). *Risk of performance decrement and crew illness due to an inadequate food system* (Evidence Report AFT). NASA Lyndon B. Johnson Space Center. https://humanresearchroadmap.nasa.gov/evidence/reports/food.pdf
+
+11. Space Food Systems Laboratory, NASA Johnson Space Center. (2024). *NASA space food formulations: Rehydratable*. NASA. https://www.nasa.gov/wp-content/uploads/2024/06/nasa-space-food-formulations-rehydratable.pdf?emrc=6ad49cf73a295
 
 ### NASA Resources and Research Platforms
 
@@ -36,7 +40,6 @@
 - [ESA – Diet Tracker in Space](https://www.esa.int/articles/diet-tracker-in-space)
 - [NASA Podcast – Diet Like an Astronaut](https://www.nasa.gov/podcasts/houston-we-have-a-podcast/diet-like-an-astronaut/)
 - [NASA Podcast – Eat Like a Martian](https://www.nasa.gov/podcasts/houston-we-have-a-podcast/eat-like-a-martian/)
-- https://www.nasa.gov/missions/artemis/artemis-2/artemis-ii-whats-on-the-menu/
 
 ### Technical Standards, Datasets, and Tools
 
@@ -48,5 +51,4 @@
 - NASA-STD-3001, Volume 1
 - NASA-STD-3001, Volume 2, Revision F
 - *Radiation Risk Mitigation in Human Space Exploration* (2026)
-- https://www.nasa.gov/wp-content/uploads/2024/06/nasa-space-food-formulations-rehydratable.pdf?emrc=6ad49cf73a295
 - https://fdc.nal.usda.gov/food-search?type=Foundation

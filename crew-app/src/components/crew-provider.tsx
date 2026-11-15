@@ -40,6 +40,7 @@ type CrewState = {
   setMood: (level: number) => void;
   markVitaminDTaken: () => void;
   vitaminDTaken: boolean;
+  currentDay: string;
   hydrated: boolean;
 };
 
@@ -131,12 +132,10 @@ export function CrewProvider({ children }: { children: ReactNode }) {
       const savedSettings = serverStates?.settings?.__app__ as { activeProfileId?: string } | undefined;
       const nextProfile = savedSettings?.activeProfileId ?? localProfile;
       if (cancelled) return;
-      /* eslint-disable react-hooks/set-state-in-effect -- hydrate persistent server/browser state once */
       setLogs(restored);
       if (PROFILES.some((profile) => profile.id === nextProfile)) setActiveId(nextProfile);
       setCurrentDay(todayKey());
       setHydrated(true);
-      /* eslint-enable react-hooks/set-state-in-effect */
     };
     void load();
     return () => { cancelled = true; };
@@ -262,6 +261,7 @@ export function CrewProvider({ children }: { children: ReactNode }) {
     setMood,
     markVitaminDTaken,
     vitaminDTaken,
+    currentDay,
     hydrated,
   };
 

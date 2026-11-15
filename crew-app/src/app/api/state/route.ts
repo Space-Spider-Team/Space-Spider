@@ -1,6 +1,6 @@
 import { connection } from "next/server";
 import { PROFILES } from "@/lib/crew";
-import { listSources, readStates, writeStates, type StateDomain } from "@/lib/server/database";
+import { listSources, readStates, storageBackend, writeStates, type StateDomain } from "@/lib/server/database";
 
 const profileIds = new Set(PROFILES.map((profile) => profile.id));
 const appSettingsId = "__app__";
@@ -9,7 +9,7 @@ export async function GET() {
   await connection();
   try {
     const [states, sources] = await Promise.all([readStates(), listSources()]);
-    return Response.json({ states, sources, storage: process.env.SUPABASE_URL ? "supabase" : "local" });
+    return Response.json({ states, sources, storage: storageBackend() });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Could not read saved data.";
     return Response.json({ error: message }, { status: 503 });
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
     await writeStates(domain, states, sourceId);
     return Response.json({
       saved: Object.keys(states).length,
-      storage: process.env.SUPABASE_URL ? "supabase" : "local",
+      storage: storageBackend(),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Could not save state.";

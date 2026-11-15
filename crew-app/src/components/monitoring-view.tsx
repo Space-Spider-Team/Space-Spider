@@ -335,10 +335,8 @@ export function MonitoringView() {
         }
       }
       if (cancelled) return;
-      /* eslint-disable react-hooks/set-state-in-effect -- hydrate persistent records once */
       if (saved) setRecords(saved);
       setStorageReady(true);
-      /* eslint-enable react-hooks/set-state-in-effect */
     };
     void load();
     return () => { cancelled = true; };

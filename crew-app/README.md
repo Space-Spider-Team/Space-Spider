@@ -9,8 +9,10 @@ SageCare is a Next.js crew health prototype. When configured, Supabase stores cr
 
 1. Create a Supabase project and open its SQL Editor.
 2. Run [`supabase/migrations/20261115_app_storage.sql`](supabase/migrations/20261115_app_storage.sql).
-3. Copy `.env.example` to `.env.local` and set `SUPABASE_URL` and `SUPABASE_SECRET_KEY` from the project settings.
-4. Restart the app. State, sources, and NASA cache now read from and write to Supabase.
+3. Set `SUPABASE_SECRET_KEY` in `.env.local` to a server-only secret/service-role key from Project Settings > API Keys. The app can reuse `NEXT_PUBLIC_SUPABASE_URL` if already set, or set `SUPABASE_URL` directly. A publishable/anon key, including one named `NEXT_PUBLIC_*`, will not work because the tables are restricted by RLS.
+4. Restart the app. State, sources, and NASA cache then read from and write to Supabase. On migration, a synthetic check row is added to each data table; it contains no crew health data and is ignored by profile views.
+
+To check the connection, visit `/api/health/storage`; it reports row counts for all three tables without exposing stored records. `/api/state` should report `storage: supabase`. In Supabase, open **Table Editor** and select `data_sources`, `app_state`, and `nasa_search_cache`. The migration seeds a clearly labeled check row in each table; the first app read also imports missing local SQLite rows, and a NASA search saves its response to the cache. [`supabase/verify.sql`](supabase/verify.sql) provides the same check in SQL Editor.
 
 The secret key is server-only. Never use a `NEXT_PUBLIC_` prefix or commit `.env.local`. If Supabase is unset, the app uses `data/sagecare.sqlite`; set `SAGECARE_DB_PATH` to move that file. SQLite files are excluded from git. On the first Supabase read, existing SQLite state is copied over if the Supabase state table is empty.
 

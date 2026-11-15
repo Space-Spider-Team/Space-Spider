@@ -37,9 +37,29 @@ insert into public.data_sources (id, name, publisher, url, access_note) values
   ('provided-reference', 'Provided nutrient reference', 'SageCare', '', 'Nutrient values supplied for this demo catalog.'),
   ('demo-estimate', 'SageCare demo estimate', 'SageCare', '', 'Illustrative sample data, not flight telemetry.'),
   ('mixed-records', 'Mixed record sources', 'SageCare', '', 'Each field retains its own source label where available.'),
-  ('legacy-migration', 'Migrated browser or SQLite data', 'SageCare', '', 'Imported from previous app storage.')
+  ('legacy-migration', 'Migrated browser or SQLite data', 'SageCare', '', 'Imported from previous app storage.'),
+  ('connection-check', 'SageCare setup check', 'SageCare', '', 'Synthetic connectivity record; not crew health data.')
 on conflict (id) do update set
   name = excluded.name,
   publisher = excluded.publisher,
   url = excluded.url,
   access_note = excluded.access_note;
+
+-- Safe sample rows make all three tables visible and testable immediately.
+-- These records are synthetic and deliberately ignored by crew profile views.
+insert into public.app_state (profile_id, domain, payload, source_id)
+values (
+  '__sagecare_connection_check__',
+  'settings',
+  '{"status":"ok","kind":"synthetic-check"}'::jsonb,
+  'connection-check'
+)
+on conflict (profile_id, domain) do nothing;
+
+insert into public.nasa_search_cache (query_key, payload, source_id)
+values (
+  '__sagecare_connection_check__',
+  '[]'::jsonb,
+  'nasa-osdr'
+)
+on conflict (query_key) do nothing;

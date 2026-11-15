@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { CrewProvider } from "@/components/crew-provider";
+import { HealthReminderToast } from "@/components/health-reminder-toast";
 import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
 
@@ -17,6 +18,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col bg-slate-950 text-slate-100">
         <CrewProvider>
           <SiteHeader />
+          <HealthReminderToast />
           <div className="flex-1">{children}</div>
           <footer className="mx-auto w-full max-w-7xl px-4 pb-6 pt-2 text-center text-xs text-slate-500 sm:px-6 lg:px-10">
             SageCare · Crew health overview · Sample profiles; records saved on this server
