@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useCrew } from "@/components/crew-provider";
+import { useCrew } from "@/components/providers/crew-provider";
 
 type Reminder = {
   title: string;

@@ -1,61 +1,23 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useCrew } from "@/components/crew-provider";
-import { SectionLabel } from "@/components/ui";
-import { pct } from "@/lib/crew";
+import { useMemo, useState, type ReactNode } from "react";
+import { useCrew } from "@/components/providers/crew-provider";
+import { SectionLabel } from "@/components/shared/ui";
 import { calculateRequirements } from "@/lib/nutrition";
 
-export function NutritionRequirements() {
-  const { profile, totals, fluid, markVitaminDTaken, vitaminDTaken } = useCrew();
-  const [sex, setSex] = useState<"Female" | "Male">(profile.sex);
-  const [age, setAge] = useState(String(profile.age));
-  const [weight, setWeight] = useState(String(profile.weightKg));
-  const [height, setHeight] = useState(String(profile.heightCm));
+export function NutritionRequirements({ children }: { children?: ReactNode }) {
+  const { profile, nutritionEstimate, saveNutritionEstimate, markVitaminDTaken, vitaminDTaken, dataSyncStatus } = useCrew();
+  const [sex, setSex] = useState<"Female" | "Male">(nutritionEstimate?.sex ?? profile.sex);
+  const [age, setAge] = useState(String(nutritionEstimate?.age ?? profile.age));
+  const [weight, setWeight] = useState(String(nutritionEstimate?.weightKg ?? profile.weightKg));
+  const [height, setHeight] = useState(String(nutritionEstimate?.heightCm ?? profile.heightCm));
+  const [saveAttempted, setSaveAttempted] = useState(false);
 
   const requirements = useMemo(
     () => calculateRequirements({ sex, age: Number(age), weightKg: Number(weight), heightCm: Number(height) }),
     [age, height, sex, weight],
   );
 
-  const tracked = [
-    {
-      label: "Energy",
-      consumed: `${totals.energy.toLocaleString()} kcal`,
-      target: requirements ? `${requirements.energy.toLocaleString()} kcal` : "—",
-      percent: requirements ? pct(totals.energy, requirements.energy) : null,
-    },
-    {
-      label: "Protein",
-      consumed: `${totals.protein} g`,
-      target: requirements ? `${requirements.protein.min}–${requirements.protein.max} g` : "—",
-      percent: requirements ? pct(totals.protein, requirements.protein.max) : null,
-    },
-    {
-      label: "Carbohydrate",
-      consumed: `${totals.carbs} g`,
-      target: requirements ? `${requirements.carbs.min}–${requirements.carbs.max} g` : "—",
-      percent: requirements ? pct(totals.carbs, requirements.carbs.max) : null,
-    },
-    {
-      label: "Fat",
-      consumed: `${totals.fat} g`,
-      target: requirements ? `${requirements.fat.min}–${requirements.fat.max} g` : "—",
-      percent: requirements ? pct(totals.fat, requirements.fat.max) : null,
-    },
-    {
-      label: "Fibre",
-      consumed: `${totals.fibre} g`,
-      target: requirements ? `${requirements.fibre} g` : "—",
-      percent: requirements ? pct(totals.fibre, requirements.fibre) : null,
-    },
-    {
-      label: "Fluid",
-      consumed: `${Math.round(fluid * 1000)} mL`,
-      target: requirements ? `≥${Math.round(requirements.fluidLitres * 1000)} mL` : "—",
-      percent: requirements ? pct(fluid, requirements.fluidLitres) : null,
-    },
-  ];
 
   return (
     <section className="panel nutrition-requirements rounded-[26px] p-5 sm:p-6">
@@ -67,35 +29,20 @@ export function NutritionRequirements() {
         </p>
       </div>
 
-      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-        {tracked.map((item) => (
-          <article key={item.label} className="tile rounded-2xl p-3.5">
-            <div className="flex items-center justify-between gap-2">
-              <h3 className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-300">{item.label}</h3>
-              <span className="text-xs font-bold text-sky-200 tabular-nums">
-                {item.percent === null ? "—" : `${item.percent}%`}
-              </span>
-            </div>
-            <p className="mt-2 text-lg font-semibold text-white tabular-nums">{item.consumed}</p>
-            <p className="mt-0.5 text-xs text-slate-400">Target {item.target}</p>
-            {item.percent !== null ? (
-              <div
-                role="progressbar"
-                aria-label={`${item.label} target coverage`}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-valuenow={item.percent}
-                className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-700/60"
-              >
-                <div className="h-full rounded-full bg-gradient-to-r from-sky-400 to-cyan-400" style={{ width: `${item.percent}%` }} />
-              </div>
-            ) : null}
-          </article>
-        ))}
-      </div>
+      {children}
 
       <div className="mt-5 grid gap-5 border-t border-slate-800/80 pt-5 lg:grid-cols-[0.8fr_1.2fr]">
-        <form className="tile rounded-2xl p-4" onSubmit={(event) => event.preventDefault()}>
+        <form
+          className="tile rounded-2xl p-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            const estimate = { sex, age: Number(age), weightKg: Number(weight), heightCm: Number(height) };
+            if (calculateRequirements(estimate)) {
+              setSaveAttempted(true);
+              saveNutritionEstimate(estimate);
+            }
+          }}
+        >
           <h3 className="font-semibold text-white">Calculate a personal estimate</h3>
           <p className="mt-1 text-xs leading-5 text-slate-400">
             Change these values to update the adult estimate.
@@ -133,6 +80,16 @@ export function NutritionRequirements() {
           ) : (
             <p className="mt-4 text-xs text-amber-300">Enter valid values for an adult aged 19 or older.</p>
           )}
+          <button
+            type="submit"
+            disabled={!requirements}
+            className="mt-4 w-full rounded-xl border border-sky-400/35 bg-sky-500/15 px-4 py-2.5 text-sm font-semibold text-sky-100 transition hover:bg-sky-500/25 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Save estimate to database
+          </button>
+          {saveAttempted && dataSyncStatus === "saving" ? <p role="status" className="mt-2 text-xs text-slate-400">Saving estimate…</p> : null}
+          {saveAttempted && (dataSyncStatus === "supabase" || dataSyncStatus === "local") ? <p role="status" className="mt-2 text-xs text-emerald-300">Estimate saved to {dataSyncStatus === "supabase" ? "Supabase" : "the local database"}.</p> : null}
+          {saveAttempted && dataSyncStatus === "error" ? <p role="alert" className="mt-2 text-xs text-rose-300">The database did not confirm this save.</p> : null}
         </form>
 
         <div className="space-y-3">

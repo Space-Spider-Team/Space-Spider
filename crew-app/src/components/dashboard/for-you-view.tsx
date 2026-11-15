@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useCrew } from "@/components/crew-provider";
-import { HrrChip, Meter, RangeMeter, SectionLabel, TonePill, toneText } from "@/components/ui";
+import { useCrew } from "@/components/providers/crew-provider";
+import { HrrChip, Meter, RangeMeter, SectionLabel, TonePill, toneText } from "@/components/shared/ui";
 import {
   FLUID_STEP,
   MACRO_META,

@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
-import { useCrew } from "@/components/crew-provider";
-import { NasaDataCatalog } from "@/components/nasa-data-catalog";
-import { HrrChip, SectionLabel, TonePill } from "@/components/ui";
+import { useCrew } from "@/components/providers/crew-provider";
+import { NasaDataCatalog } from "@/components/monitoring/nasa-data-catalog";
+import { HrrChip, SectionLabel, TonePill } from "@/components/shared/ui";
 
 type EntrySource = "demo-seed" | "crew-entered";
 type BpPoint = { day: string; systolic: number; diastolic: number; timestamp: string; source?: EntrySource };
@@ -266,7 +266,7 @@ function Section({
 }
 
 export function MonitoringView() {
-  const { profile } = useCrew();
+  const { profile, reportDataSyncStatus } = useCrew();
   const [records, setRecords] = useState<Record<string, MonitoringRecord>>({});
   const [storageReady, setStorageReady] = useState(false);
   const saveQueue = useRef(Promise.resolve());
@@ -350,14 +350,21 @@ export function MonitoringView() {
       // The prototype remains usable in memory when storage is blocked.
     }
     saveQueue.current = saveQueue.current.catch(() => undefined).then(async () => {
-      const response = await fetch("/api/state", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ domain: "monitoring", states: records }),
-      });
-      if (!response.ok) throw new Error("Monitoring data was not saved to the database.");
-    }).catch(() => undefined);
-  }, [records, storageReady]);
+      reportDataSyncStatus("saving");
+      try {
+        const response = await fetch("/api/state", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ domain: "monitoring", states: records }),
+        });
+        if (!response.ok) throw new Error("Monitoring data was not saved to the database.");
+        const saved = await response.json() as { storage?: string };
+        reportDataSyncStatus(saved.storage === "supabase" ? "supabase" : "local");
+      } catch {
+        reportDataSyncStatus("error");
+      }
+    });
+  }, [records, reportDataSyncStatus, storageReady]);
 
   const record = records[profile.id] ?? seededRecord(profile);
   const updateRecord = (patch: Partial<MonitoringRecord>) =>

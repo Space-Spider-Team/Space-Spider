@@ -129,6 +129,7 @@ export type Food = {
   servingGrams: number;
   glyph: string;
   kind: string;
+  mealCategory: MealCategory;
   macros: Macros;
   nutrients?: FoodNutrient[];
   nutrientSource?: "provided-reference";
@@ -146,6 +147,7 @@ export const FOODS: Food[] = [
     servingGrams: 100,
     glyph: "🥚",
     kind: "Breakfast",
+    mealCategory: "breakfast",
     macros: { energy: 183.9, protein: 12.02, carbs: 2.81, fat: 13.6, fibre: 0 },
     nutrientSource: "provided-reference",
     referenceNote: "100 g formula-input equivalent",
@@ -168,6 +170,7 @@ export const FOODS: Food[] = [
     servingGrams: 28.3,
     glyph: "🌰",
     kind: "Snack",
+    mealCategory: "snack",
     macros: { energy: 165.2, protein: 6.07, carbs: 5.67, fat: 14.46, fibre: 3.05 },
     nutrientSource: "provided-reference",
     referenceNote: "One demo reference unit",
@@ -190,6 +193,7 @@ export const FOODS: Food[] = [
     servingGrams: 100,
     glyph: "🥗",
     kind: "Lunch",
+    mealCategory: "lunch",
     macros: { energy: 155.3, protein: 15.29, carbs: 6.3, fat: 7.62, fibre: 1.06 },
     nutrientSource: "provided-reference",
     referenceNote: "100 g formula-input equivalent",
@@ -212,6 +216,7 @@ export const FOODS: Food[] = [
     servingGrams: 28.3,
     glyph: "🥜",
     kind: "Snack",
+    mealCategory: "snack",
     macros: { energy: 150.8, protein: 4.92, carbs: 10.27, fat: 11.01, fibre: 1.16 },
     nutrientSource: "provided-reference",
     referenceNote: "One demo reference unit",
@@ -228,7 +233,7 @@ export const FOODS: Food[] = [
   },
 ];
 
-export const PORTIONS = [0.5, 1, 1.5, 2] as const;
+export const PORTIONS = [0.5, 1] as const;
 
 export const MEAL_CATEGORIES = [
   { key: "breakfast", label: "Breakfast", glyph: "☀" },

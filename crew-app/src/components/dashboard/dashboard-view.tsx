@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useCrew } from "@/components/crew-provider";
-import { HrrChip, Meter, RangeMeter, SectionLabel, TonePill, toneText } from "@/components/ui";
+import { useCrew } from "@/components/providers/crew-provider";
+import { HrrChip, Meter, RangeMeter, SectionLabel, TonePill } from "@/components/shared/ui";
 import { macroCap, pct, type Range, type Tone } from "@/lib/crew";
 import { shiftDay } from "@/lib/records";
 
 type TrendPoint = { label: string; value: number; timestamp: string };
 
-function TrendChart({ title, unit, points, sample = false, sourceLabel }: { title: string; unit: string; points: TrendPoint[]; sample?: boolean; sourceLabel?: string }) {
+function TrendChart({ title, unit, points, sample = false, sourceLabel, color = "var(--chart-energy)" }: { title: string; unit: string; points: TrendPoint[]; sample?: boolean; sourceLabel?: string; color?: string }) {
   const values = points.map((point) => point.value);
   const min = Math.min(...values);
   const max = Math.max(...values);
@@ -30,12 +30,12 @@ function TrendChart({ title, unit, points, sample = false, sourceLabel }: { titl
         </div>
         <span className="text-xs text-slate-400">{unit}</span>
       </div>
-      <svg viewBox="0 0 380 124" role="img" aria-label={`${title} timestamped trend`} className="h-32 w-full overflow-visible">
+      <svg viewBox="0 0 380 124" role="img" aria-label={`${title} timestamped trend`} className="h-40 w-full overflow-visible">
         {[20, 44, 68, 92].map((y) => <line key={y} x1="8" y1={y} x2="372" y2={y} stroke="rgba(148,163,184,0.14)" strokeDasharray="3 6" />)}
-        <path d={path} fill="none" stroke="#38bdf8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d={path} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
         {coords.map((point, index) => (
           <g key={`${point.timestamp}-${index}`}>
-            <circle cx={point.x} cy={point.y} r="3.5" fill="#7dd3fc">
+            <circle cx={point.x} cy={point.y} r="3.5" fill={color}>
               <title>{point.timestamp}: {point.value} {unit}</title>
             </circle>
           </g>
@@ -73,40 +73,33 @@ const ALERT_BOX: Record<Tone, { box: string; bar: string; title: string }> = {
   alert: { box: "border-rose-400/20 bg-rose-500/[0.07]", bar: "bg-rose-400", title: "text-rose-100" },
 };
 
-const SYSTEM_POSITIONS = [
-  { left: "50%", top: "18%" },
-  { left: "24%", top: "30%" },
-  { left: "73%", top: "30%" },
-  { left: "32%", top: "53%" },
-  { left: "68%", top: "53%" },
-  { left: "50%", top: "68%" },
-];
-
 export function DashboardView() {
   const { profile, totals, fluid, meals, fluidLog, currentDay } = useCrew();
   const [trendRange, setTrendRange] = useState<"week" | "month">("week");
 
   const hr = profile.metrics.find((metric) => metric.label === "Resting HR") ?? profile.metrics[0];
   const trendCount = trendRange === "week" ? 7 : 30;
+  // Use a stable seed until the provider supplies the crew's UTC day. Reading
+  // the clock here would make the server and first browser render disagree.
+  const trendEndDay = currentDay || "2000-01-07";
   const sampleTrend = (metricLabel: string, center: number, amplitude: number) => {
     const metric = profile.metrics.find((item) => item.label === metricLabel);
     const parsed = metricLabel === "Blood pressure"
       ? Number.parseFloat(metric?.value.split("/")[0] ?? "")
       : Number.parseFloat(metric?.value ?? "");
     const endValue = Number.isFinite(parsed) ? parsed : center;
-    const sampleCount = Math.min(trendCount, 10);
+    const sampleCount = trendCount;
     return Array.from({ length: sampleCount }, (_, index) => {
-      // Fixed dates keep illustrative sample histories stable through SSR hydration.
-      const day = shiftDay("2026-11-15", index - sampleCount + 1);
+      const day = shiftDay(trendEndDay, index - sampleCount + 1);
       const value = index === sampleCount - 1 ? endValue : Math.round(center + Math.sin(index * 1.7) * amplitude + Math.cos(index * 0.8) * amplitude * 0.45);
       return { label: day.slice(5), value, timestamp: `${day} 08:00 UTC` };
     });
   };
   const sampleVitals = [
-    { title: "Resting HR", unit: "bpm", points: sampleTrend("Resting HR", 70, 3) },
-    { title: "Blood pressure · systolic", unit: "mmHg", points: sampleTrend("Blood pressure", 116, 4) },
-    { title: "SpO₂", unit: "%", points: sampleTrend("SpO₂", 97, 1) },
-    { title: "Sleep", unit: "h", points: sampleTrend("Sleep", profile.sleep.hours, 0.7) },
+    { title: "Resting HR", unit: "bpm", points: sampleTrend("Resting HR", 70, 3), color: "var(--chart-energy)" },
+    { title: "Blood pressure · systolic", unit: "mmHg", points: sampleTrend("Blood pressure", 116, 4), color: "var(--chart-carbs)" },
+    { title: "SpO₂", unit: "%", points: sampleTrend("SpO₂", 97, 1), color: "var(--chart-fibre)" },
+    { title: "Sleep", unit: "h", points: sampleTrend("Sleep", profile.sleep.hours, 0.7), color: "var(--chart-protein)" },
   ];
   const mealTimeline = meals
     .filter((meal) => meal.date === currentDay || !meal.date)
@@ -173,7 +166,6 @@ export function DashboardView() {
             ["health-overview", "Health status"],
             ["mission-alerts", "Alerts"],
             ["measurement-trends", "Trends"],
-            ["body-systems", "Systems"],
             ["daily-plan", "Daily plan"],
             ["nutrition-summary", "Nutrition"],
             ["hrr-references", "NASA HRR"],
@@ -319,7 +311,7 @@ export function DashboardView() {
           </div>
         </section>
 
-        <section className="mb-6 grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
+        <section className="mb-6">
           <div id="measurement-trends" className="panel scroll-mt-40 rounded-[26px] p-5 sm:p-6">
             <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
               <div>
@@ -337,78 +329,13 @@ export function DashboardView() {
             </div>
             <div className="grid gap-3 md:grid-cols-2">
               {sampleVitals.map((chart) => <TrendChart key={chart.title} {...chart} sample />)}
-              <TrendChart title="Energy intake" unit="kcal" points={energyPoints} sourceLabel={energySourceLabel} />
-              <TrendChart title="Fluid intake" unit="L" points={fluidPoints} sourceLabel={fluidSourceLabel} />
+              <TrendChart title="Energy intake" unit="kcal" points={energyPoints} sourceLabel={energySourceLabel} color="var(--chart-energy)" />
+              <TrendChart title="Fluid intake" unit="L" points={fluidPoints} sourceLabel={fluidSourceLabel} color="var(--chart-fluid)" />
             </div>
           </div>
 
-          <div id="body-systems" className="panel scroll-mt-40 rounded-[26px] p-5 sm:p-6">
-            <div className="mb-5 flex items-center justify-between gap-3">
-              <div>
-                <SectionLabel>Body status</SectionLabel>
-                <h2 className="mt-1.5 text-2xl font-semibold tracking-tight text-white">System view</h2>
-              </div>
-            </div>
-
-            <div className="relative mx-auto h-[320px] w-full max-w-[260px] overflow-hidden rounded-2xl border border-slate-700/70 bg-[radial-gradient(circle_at_50%_14%,rgba(56,189,248,0.16),transparent_58%),linear-gradient(180deg,#0b1526,#070c17)]">
-              <div aria-hidden className="pointer-events-none absolute inset-0">
-                <div className="absolute left-1/2 top-1/2 h-[250px] w-[250px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-sky-400/15" />
-                <div className="absolute left-1/2 top-1/2 h-[184px] w-[184px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-dashed border-sky-400/20" />
-                <div className="scan-line absolute inset-x-3 top-0 h-16 bg-[linear-gradient(180deg,transparent,rgba(56,189,248,0.16),transparent)]" />
-              </div>
-
-              <svg viewBox="0 0 200 300" aria-hidden="true" className="relative mx-auto h-full w-auto">
-                <defs>
-                  <linearGradient id="bodyFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="rgba(56,189,248,0.22)" />
-                    <stop offset="100%" stopColor="rgba(56,189,248,0.03)" />
-                  </linearGradient>
-                </defs>
-
-                <g stroke="rgba(125,211,252,0.5)" strokeWidth="1.4" fill="url(#bodyFill)">
-                  <ellipse cx="100" cy="44" rx="17" ry="19" />
-                  <rect x="92" y="61" width="16" height="10" rx="5" />
-                  <path d="M82 72 q18 -6 36 0 l5 52 q1 16 -23 16 q-24 0 -23 -16 z" />
-                  <rect x="63" y="76" width="11" height="62" rx="5.5" />
-                  <rect x="126" y="76" width="11" height="62" rx="5.5" />
-                  <rect x="84" y="138" width="12" height="78" rx="6" />
-                  <rect x="104" y="138" width="12" height="78" rx="6" />
-                </g>
-              </svg>
-
-              {profile.systems.map((card, index) => {
-                const position = SYSTEM_POSITIONS[index] ?? SYSTEM_POSITIONS[0];
-
-                return (
-                  <div
-                    key={card.label}
-                    title={card.hrr.map((key) => `HRR ${key}`).join(", ")}
-                    className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border border-slate-700/70 bg-slate-950/90 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.1em] shadow-[0_6px_16px_rgba(0,0,0,0.55)]"
-                    style={{ left: position.left, top: position.top }}
-                  >
-                    <span className={toneText(card.tone)}>{card.label}</span>
-                    <span className="ml-1 text-slate-300 tabular-nums">{card.value}</span>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="mt-4 grid grid-cols-2 gap-x-3 gap-y-2">
-              {profile.systems.map((card) => (
-                <div key={card.label} className="flex items-center justify-between gap-2">
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
-                    {card.label}
-                  </span>
-                  <span className="flex gap-1">
-                    {card.hrr.map((key) => (
-                      <HrrChip key={key} riskKey={key} />
-                    ))}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
         </section>
+
 
         <section className="mb-6 grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
           <div id="daily-plan" className="panel scroll-mt-40 rounded-[26px] p-5 sm:p-6">

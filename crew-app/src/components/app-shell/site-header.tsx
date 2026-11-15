@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useCrew } from "@/components/crew-provider";
+import { useCrew } from "@/components/providers/crew-provider";
 
 const LINKS = [
   { href: "/", label: "For you" },
@@ -14,11 +14,21 @@ const LINKS = [
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const { profile, profiles, selectProfile } = useCrew();
+  const { profile, profiles, selectProfile, dataSyncStatus } = useCrew();
   const [utcTime, setUtcTime] = useState("--:--:--");
   const [timePhase, setTimePhase] = useState("syncing");
 
   useEffect(() => {
+    const root = document.documentElement;
+    delete root.dataset.accent;
+    ["--text-accent", "--border-accent", "--accent", "--palette-sky-100", "--palette-sky-200", "--palette-sky-300", "--palette-sky-400", "--palette-sky-500", "--palette-sky-600", "--palette-cyan-300", "--palette-cyan-400", "--palette-cyan-500"].forEach((name) => root.style.removeProperty(name));
+    try {
+      window.localStorage.removeItem("sagecare.accent.v1");
+      window.localStorage.removeItem("sagecare.theme-mode.v1");
+    } catch {
+      // Appearance settings are no longer stored by this app.
+    }
+
     const updateClock = () => {
       const now = new Date();
       const utcHour = now.getUTCHours();
@@ -87,6 +97,20 @@ export function SiteHeader() {
               {timePhase}
             </span>
           </div>
+          <span
+            className="data-sync-badge"
+            data-status={dataSyncStatus}
+            role="status"
+            aria-live="polite"
+            title={dataSyncStatus === "error" ? "Changes remain in this browser, but the database did not confirm they were saved." : undefined}
+          >
+            <span className="data-sync-badge__dot" aria-hidden="true" />
+            {dataSyncStatus === "checking" ? "Checking storage"
+              : dataSyncStatus === "saving" ? "Saving changes"
+                : dataSyncStatus === "supabase" ? "Supabase synced"
+                  : dataSyncStatus === "local" ? "Local database"
+                    : "Not synced"}
+          </span>
           <span className="hidden text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500 sm:block">
             Profile
           </span>

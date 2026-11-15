@@ -1,4 +1,4 @@
-import { MonitoringView } from "@/components/monitoring-view";
+import { MonitoringView } from "@/components/monitoring/monitoring-view";
 
 export default function MonitoringPage() {
   return <MonitoringView />;

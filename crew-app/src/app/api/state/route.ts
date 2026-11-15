@@ -2,9 +2,24 @@ import { connection } from "next/server";
 import { PROFILES } from "@/lib/crew";
 import { listSources, readStates, storageBackend, writeStates, type StateDomain } from "@/lib/server/database";
 import { dayKey, parseLog } from "@/lib/records";
+import { calculateRequirements, type Body } from "@/lib/nutrition";
 
 const profileIds = new Set(PROFILES.map((profile) => profile.id));
 const appSettingsId = "__app__";
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isNutritionEstimate(value: unknown): value is Body {
+  if (!isObject(value)) return false;
+  const body = value as Partial<Body>;
+  return (body.sex === "Female" || body.sex === "Male")
+    && typeof body.age === "number"
+    && typeof body.weightKg === "number"
+    && typeof body.heightCm === "number"
+    && calculateRequirements(body as Body) !== null;
+}
 
 export async function GET() {
   await connection();
@@ -43,13 +58,37 @@ export async function POST(request: Request) {
     return Response.json({ error: "Unknown crew profile." }, { status: 400 });
   }
   if (domain === "settings") {
-    const settings = states[appSettingsId];
-    const activeProfileId = settings && typeof settings === "object"
-      ? (settings as { activeProfileId?: unknown }).activeProfileId
-      : null;
+    const incoming = states[appSettingsId];
+    if (!isObject(incoming)) return Response.json({ error: "App settings must be an object." }, { status: 400 });
+
+    let previous: Awaited<ReturnType<typeof readStates>>;
+    try {
+      previous = await readStates();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not read saved settings.";
+      return Response.json({ error: message }, { status: 503 });
+    }
+    const existing = isObject(previous.settings[appSettingsId]) ? previous.settings[appSettingsId] as Record<string, unknown> : {};
+    const activeProfileId = incoming.activeProfileId ?? existing.activeProfileId ?? PROFILES[0].id;
     if (typeof activeProfileId !== "string" || !profileIds.has(activeProfileId)) {
       return Response.json({ error: "Choose a valid crew profile." }, { status: 400 });
     }
+
+    let nutritionEstimates = isObject(existing.nutritionEstimates) ? existing.nutritionEstimates : {};
+    if (incoming.nutritionEstimates !== undefined) {
+      if (!isObject(incoming.nutritionEstimates)) {
+        return Response.json({ error: "Nutrition estimates must be an object keyed by crew profile." }, { status: 400 });
+      }
+      const updates = incoming.nutritionEstimates;
+      if (Object.entries(updates).some(([profileId, estimate]) => !profileIds.has(profileId) || !isNutritionEstimate(estimate))) {
+        return Response.json({ error: "A nutrition estimate is invalid or references an unknown profile." }, { status: 400 });
+      }
+      nutritionEstimates = { ...nutritionEstimates, ...updates };
+    }
+
+    states = {
+      [appSettingsId]: { ...existing, ...incoming, activeProfileId, nutritionEstimates },
+    };
   }
 
   if (domain === "crew") {

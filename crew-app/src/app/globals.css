@@ -2,6 +2,12 @@
 
 :root {
   --background: #0b131d;
+  --chart-energy: #55c5e4;
+  --chart-protein: #79d3a5;
+  --chart-carbs: #f0c15f;
+  --chart-fat: #e58cab;
+  --chart-fibre: #68c7b4;
+  --chart-fluid: #8d9ff0;
   --foreground: #e8eff4;
   --surface: #121e2a;
   --surface-2: #192633;
@@ -216,6 +222,28 @@ html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) :w
 :where([class~="text-[10px]"], [class~="text-[11px]"]) { font-size: 0.75rem !important; line-height: 1.45 !important; }
 h1 { line-height: 1.12; letter-spacing: -0.035em; }
 h2 { line-height: 1.2; letter-spacing: -0.025em; }
+
+.data-sync-badge {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.4rem 0.75rem;
+  color: var(--text-body);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.data-sync-badge__dot { width: 0.6rem; height: 0.6rem; flex: 0 0 auto; border-radius: 999px; background: var(--text-muted); }
+.data-sync-badge[data-status="supabase"] .data-sync-badge__dot { background: var(--text-good); }
+.data-sync-badge[data-status="local"] .data-sync-badge__dot { background: var(--text-watch); }
+.data-sync-badge[data-status="saving"] .data-sync-badge__dot,
+.data-sync-badge[data-status="checking"] .data-sync-badge__dot { background: var(--text-accent); }
+.data-sync-badge[data-status="error"] { color: var(--text-alert); border-color: var(--text-alert); }
+.data-sync-badge[data-status="error"] .data-sync-badge__dot { background: var(--text-alert); }
 
 main .panel { padding: 1.375rem; }
 @media (max-width: 639px) {

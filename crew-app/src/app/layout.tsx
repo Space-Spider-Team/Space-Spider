@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { CrewProvider } from "@/components/crew-provider";
-import { HealthReminderToast } from "@/components/health-reminder-toast";
-import { SiteHeader } from "@/components/site-header";
+import { CrewProvider } from "@/components/providers/crew-provider";
+import { HealthReminderToast } from "@/components/app-shell/health-reminder-toast";
+import { SiteHeader } from "@/components/app-shell/site-header";
 import "./globals.css";
 
 export const metadata: Metadata = {

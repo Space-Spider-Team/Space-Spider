@@ -1,4 +1,4 @@
-SageCare is a Next.js crew health prototype. When configured, Supabase stores crew logs, monitoring entries, source records, and the NASA OSDR search cache. SQLite remains available as a local fallback.
+SageCare is a Next.js crew health prototype. When configured, Supabase stores crew logs, monitoring entries, nutrition estimates, source records, app settings, and the NASA OSDR search cache. SQLite remains available as a local fallback.
 
 ## Requirements
 
@@ -17,6 +17,16 @@ To check the connection, visit `/api/health/storage`; it reports row counts for 
 The secret key is server-only. Never use a `NEXT_PUBLIC_` prefix or commit `.env.local`. If Supabase is unset, the app uses `data/sagecare.sqlite`; set `SAGECARE_DB_PATH` to move that file. SQLite files are excluded from git. On the first Supabase read, existing SQLite state is copied over if the Supabase state table is empty.
 
 Existing browser logs are imported the first time the server database is empty. Browser storage remains as a local fallback if the API is unavailable.
+
+## Source layout
+
+- `src/app/` contains routes and API handlers.
+- `src/components/app-shell/` contains the shared header and app-level reminders.
+- `src/components/providers/` contains the crew state provider and database synchronization.
+- `src/components/shared/` contains reusable UI components.
+- `src/components/dashboard/`, `monitoring/`, and `nutrition/` group screens by feature.
+- `src/lib/server/database.ts` is the server-side SQLite/Supabase storage adapter; `/api/state` validates and reads/writes app state.
+- `supabase/migrations/` contains the database schema and seed records.
 
 NASA OSDR search returns study metadata only. Human research files may have controlled access; this app does not import private astronaut medical records. Profile and sensor readings remain simulated unless entered by a crew member. This prototype has no sign-in: the server-only Supabase secret bypasses RLS, so keep the app private and do not store real patient data until user authentication and access controls are added.
 

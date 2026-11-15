@@ -1,4 +1,4 @@
-import { NutritionView } from "@/components/nutrition-view";
+import { NutritionView } from "@/components/nutrition/nutrition-view";
 
 export default function NutritionPage() {
   return <NutritionView />;

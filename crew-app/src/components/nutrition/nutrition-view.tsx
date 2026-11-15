@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useCrew } from "@/components/crew-provider";
-import { NutritionRequirements } from "@/components/nutrition-requirements";
-import { HrrChip, HrrList, Meter, RangeMeter, SectionLabel, TonePill, toneText } from "@/components/ui";
+import { useCrew } from "@/components/providers/crew-provider";
+import { NutritionRequirements } from "@/components/nutrition/nutrition-requirements";
+import { HrrChip, HrrList, Meter, RangeMeter, SectionLabel, TonePill, toneText } from "@/components/shared/ui";
 import {
   FLUID_STEP,
   FOODS,
@@ -20,7 +20,9 @@ import {
   type Macros,
   type MealCategory,
   type Tone,
+  type MealEntry,
 } from "@/lib/crew";
+import type { FluidRecord } from "@/lib/records";
 
 type DetectedBarcode = { rawValue: string };
 type BarcodeDetectorLike = { detect: (source: CanvasImageSource) => Promise<DetectedBarcode[]> };
@@ -36,6 +38,140 @@ function formatNutrient(nutrient: FoodNutrient, portions: number): string {
   const value = Number((nutrient.amount * portions).toFixed(2));
   const prefix = nutrient.qualifier === "approx" ? "~" : nutrient.qualifier === "at-least" ? "At least " : "";
   return `${prefix}${value} ${nutrient.unit}`;
+}
+
+type TrendMetric = "energy" | "protein" | "carbs" | "fat" | "fibre" | "fluid";
+type TrendPeriod = "week" | "month";
+
+const TREND_METRICS: { key: TrendMetric; label: string; unit: string; color: string }[] = [
+  { key: "energy", label: "Energy", unit: "kcal", color: "#91b9c0" },
+  { key: "protein", label: "Protein", unit: "g", color: "#9fc2a8" },
+  { key: "carbs", label: "Carbs", unit: "g", color: "#c7b47e" },
+  { key: "fat", label: "Fat", unit: "g", color: "#bc9eb4" },
+  { key: "fibre", label: "Fibre", unit: "g", color: "#91b9ad" },
+  { key: "fluid", label: "Fluids", unit: "L", color: "#91acc2" },
+];
+
+function NutritionTrendChart({
+  meals,
+  fluidLog,
+  currentDay,
+  targets,
+}: {
+  meals: MealEntry[];
+  fluidLog: FluidRecord[];
+  currentDay: string;
+  targets: Record<TrendMetric, number>;
+}) {
+  const [metricKey, setMetricKey] = useState<TrendMetric>("energy");
+  const [period, setPeriod] = useState<TrendPeriod>("week");
+  const metric = TREND_METRICS.find((item) => item.key === metricKey) ?? TREND_METRICS[0];
+  const days = period === "week" ? 7 : 30;
+  // Wait for the persisted UTC day from the provider instead of reading the
+  // browser clock during render; that keeps server and first-client markup equal.
+  const data = currentDay ? Array.from({ length: days }, (_, index) => {
+    const endDay = currentDay;
+    const date = new Date(`${endDay}T00:00:00Z`);
+    date.setUTCDate(date.getUTCDate() - (days - index - 1));
+    const key = date.toISOString().slice(0, 10);
+    const dayMeals = meals.filter((meal) => meal.date === key);
+    const mealValue = dayMeals.reduce((sum, meal) => sum + (metricKey === "fluid"
+      ? (meal.nutrients?.find((nutrient) => nutrient.label === "Intrinsic water")?.amount ?? 0) / 1000
+      : meal.macros[metricKey]), 0);
+    const drinkValue = metricKey === "fluid"
+      ? fluidLog.filter((record) => record.date === key).reduce((sum, record) => sum + record.ml, 0) / 1000
+      : 0;
+    return {
+      date: key,
+      label: period === "week"
+        ? date.toLocaleDateString("en", { weekday: "short", timeZone: "UTC" })
+        : date.toLocaleDateString("en", { month: "short", day: "numeric", timeZone: "UTC" }),
+      value: Number((mealValue + drinkValue).toFixed(2)),
+    };
+  }) : [];
+  const dataReady = data.length > 0;
+  const maxValue = Math.max(1, ...data.map((point) => point.value));
+  const average = data.length ? data.reduce((sum, point) => sum + point.value, 0) / data.length : 0;
+  const total = data.reduce((sum, point) => sum + point.value, 0);
+  const latest = data.at(-1)?.value ?? 0;
+  const latestCoverage = pct(latest, targets[metricKey]);
+  const chartWidth = 720;
+  const chartHeight = 230;
+  const left = 42;
+  const right = 12;
+  const top = 16;
+  const bottom = 34;
+  const xAt = (index: number) => left + (index / Math.max(1, data.length - 1)) * (chartWidth - left - right);
+  const yAt = (value: number) => top + (1 - value / maxValue) * (chartHeight - top - bottom);
+  const points = data.map((point, index) => `${xAt(index)},${yAt(point.value)}`).join(" ");
+  const ticks = period === "week" ? [0, 2, 4, 6] : [0, 7, 14, 21, 29];
+
+  return (
+    <section className="mt-5 border-t border-slate-800/80 pt-4" aria-label="Nutrition trends">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h3 className="text-base font-semibold text-white">Intake trends</h3>
+          <p className="mt-1 text-xs text-slate-400">Daily totals from your saved log</p>
+        </div>
+        <div className="inline-flex rounded-xl border border-slate-700/80 bg-slate-900/50 p-1" role="group" aria-label="Trend period">
+          {(["week", "month"] as const).map((value) => (
+            <button key={value} type="button" aria-pressed={period === value} onClick={() => setPeriod(value)}
+              className={`rounded-lg px-3 py-1.5 text-xs font-semibold capitalize transition-colors ${period === value ? "bg-sky-500/20 text-sky-100" : "text-slate-400 hover:text-slate-100"}`}>
+              {value === "week" ? "Weekly" : "Monthly"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-6" role="group" aria-label="Nutrition measure">
+        {TREND_METRICS.map((item) => (
+          <button key={item.key} type="button" aria-pressed={metricKey === item.key} onClick={() => setMetricKey(item.key)}
+            className={`rounded-xl border px-2 py-2 text-left transition-colors ${metricKey === item.key ? "border-sky-400/50 bg-sky-500/15 text-white shadow-sm" : "border-slate-700/70 bg-slate-900/40 text-slate-400 hover:border-slate-600 hover:text-slate-100"}`}>
+            <span className="block text-xs font-semibold">{item.label}</span>
+            <span className="mt-1 block h-0.5 w-6 rounded" style={{ backgroundColor: item.color, opacity: metricKey === item.key ? 1 : 0.45 }} />
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-4 grid items-stretch gap-3 lg:grid-cols-[minmax(13rem,0.72fr)_minmax(0,1.6fr)]">
+        <div className="tile flex flex-col justify-between rounded-2xl p-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-400">{metric.label} · today</p>
+            <p className="mt-2 text-4xl font-semibold tracking-tight text-white tabular-nums">{dataReady ? `${latestCoverage}%` : "—"}</p>
+            <p className="mt-1 text-sm text-slate-400">of daily target</p>
+            <p className="mt-5 text-2xl font-semibold text-white tabular-nums">
+              {dataReady ? latest.toLocaleString("en-US", { maximumFractionDigits: 2 }) : "—"} <span className="text-base font-medium text-slate-400">{metric.unit}</span>
+            </p>
+            <p className="mt-1 text-sm text-slate-400">Target {targets[metricKey].toLocaleString("en-US")} {metric.unit}</p>
+          </div>
+          <div className="mt-5 grid grid-cols-2 gap-2 border-t border-slate-700/70 pt-3">
+            <div>
+              <p className="text-xs text-slate-400">{period === "week" ? "7-day total" : "30-day total"}</p>
+              <p className="mt-1 text-sm font-semibold text-white tabular-nums">{dataReady ? `${total.toLocaleString("en-US", { maximumFractionDigits: 2 })} ${metric.unit}` : "—"}</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-400">Daily average</p>
+              <p className="mt-1 text-sm font-semibold text-white tabular-nums">{dataReady ? `${average.toLocaleString("en-US", { maximumFractionDigits: 2 })} ${metric.unit}` : "—"}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="min-w-0 overflow-hidden rounded-2xl border border-slate-700/70 bg-slate-950/25 p-2 sm:p-3">
+          {dataReady ? <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="h-56 w-full overflow-visible" role="img" aria-label={`${metric.label} ${period === "week" ? "weekly" : "monthly"} daily trend, shown in ${metric.unit}`}>
+            {[0, 0.5, 1].map((fraction) => {
+              const y = top + fraction * (chartHeight - top - bottom);
+              const label = (maxValue * (1 - fraction)).toLocaleString("en-US", { maximumFractionDigits: 1 });
+              return <g key={fraction}><line x1={left} x2={chartWidth - right} y1={y} y2={y} stroke="var(--border)" strokeDasharray="3 6" opacity="0.6" /><text x={left - 8} y={y + 4} textAnchor="end" fill="var(--text-muted)" fontSize="11">{label}</text></g>;
+            })}
+            {ticks.map((index) => <text key={index} x={xAt(index)} y={chartHeight - 8} textAnchor="middle" fill="var(--text-muted)" fontSize="11">{data[index]?.label}</text>)}
+            <polyline points={points} fill="none" stroke={metric.color} strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+            {data.map((point, index) => <circle key={point.date} cx={xAt(index)} cy={yAt(point.value)} r={index === data.length - 1 ? 5 : 3} fill={metric.color}><title>{point.date}: {point.value} {metric.unit}</title></circle>)}
+          </svg> : <div className="flex h-56 items-center justify-center text-sm text-slate-400" role="status">Loading saved intake history…</div>}
+        </div>
+      </div>
+      <p className="mt-2 text-xs text-slate-500">A zero means no intake was logged for that day.</p>
+    </section>
+  );
 }
 
 const MACRO_TONE: Record<keyof Macros, Tone> = {
@@ -240,7 +376,7 @@ function ScannerModal({
 }
 
 export function NutritionView() {
-  const { profile, meals, fluid, drinkFluid, foodWater, totals, addMeal, removeMeal, addFluid } = useCrew();
+  const { profile, meals, mealHistory, fluidLog, currentDay, hydrated, fluid, drinkFluid, foodWater, totals, addMeal, removeMeal, addFluid } = useCrew();
   const dailyMicronutrients = ["Iron", "Sodium", "Potassium", "Phosphorus", "Calcium", "Vitamin C"].map((label) => {
     let amount = 0;
     let missing = 0;
@@ -372,6 +508,7 @@ export function NutritionView() {
           {[
             ["food-log", "Add food"],
             ["daily-targets", "Daily targets"],
+            ["nutrition-trends", "Trends"],
             ["meal-log", "Today's meals"],
             ["hydration", "Fluids"],
           ].map(([id, label]) => (
@@ -550,7 +687,7 @@ export function NutritionView() {
                                 : "border-slate-700/70 bg-slate-900/60 text-slate-400 hover:border-slate-600 hover:text-slate-200"
                             }`}
                           >
-                            {value}×
+                            {value === 0.5 ? "Half unit" : "One unit"}
                           </button>
                         );
                       })}
@@ -590,7 +727,7 @@ export function NutritionView() {
                     onClick={handleAdd}
                     className="mt-4 w-full rounded-xl border border-sky-400/40 bg-sky-500/20 px-4 py-2.5 text-sm font-semibold text-sky-100 transition-colors hover:border-sky-300/60 hover:bg-sky-500/30 hover:text-white"
                   >
-                    Add {portions}× {selected.name} to{" "}
+                    Add {portions === 0.5 ? "half" : "one"} unit of {selected.name} to{" "}
                     {MEAL_CATEGORIES.find((item) => item.key === category)?.label.toLowerCase()}
                   </button>
                 </div>
@@ -859,7 +996,21 @@ export function NutritionView() {
       </div>
 
       <div className="mx-auto mt-6 max-w-7xl">
-        <NutritionRequirements key={profile.id} />
+        <NutritionRequirements key={`${profile.id}-${hydrated ? "ready" : "loading"}`}>
+          <NutritionTrendChart
+            meals={mealHistory}
+            fluidLog={fluidLog}
+            currentDay={currentDay}
+            targets={{
+              energy: profile.targets.energy,
+              protein: profile.ranges.protein?.max ?? profile.targets.protein,
+              carbs: profile.ranges.carbs?.max ?? profile.targets.carbs,
+              fat: profile.ranges.fat?.max ?? profile.targets.fat,
+              fibre: profile.targets.fibre,
+              fluid: profile.targets.fluid,
+            }}
+          />
+        </NutritionRequirements>
       </div>
 
       {scanOpen ? <ScannerModal onClose={() => setScanOpen(false)} onDetect={handleDetect} /> : null}
