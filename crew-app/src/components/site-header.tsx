@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useCrew } from "@/components/crew-provider";
 
 const LINKS = [
@@ -14,19 +15,38 @@ const LINKS = [
 export function SiteHeader() {
   const pathname = usePathname();
   const { profile, profiles, selectProfile } = useCrew();
+  const [utcTime, setUtcTime] = useState("--:--:--");
+  const [timePhase, setTimePhase] = useState("syncing");
+
+  useEffect(() => {
+    const updateClock = () => {
+      const now = new Date();
+      const utcHour = now.getUTCHours();
+      setUtcTime(new Intl.DateTimeFormat("en-GB", {
+        timeZone: "UTC", hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23",
+      }).format(now));
+      const phase = utcHour >= 6 && utcHour < 18 ? "day" : "night";
+      setTimePhase(phase);
+      document.documentElement.dataset.theme = phase;
+      document.documentElement.dataset.timePhase = phase;
+    };
+    updateClock();
+    const timer = window.setInterval(updateClock, 1000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   return (
     <div className="px-4 pt-3 sm:px-6 lg:px-10">
       <header className="panel sticky top-3 z-30 mx-auto flex max-w-7xl flex-col gap-3 rounded-3xl bg-slate-950/85 px-4 py-3 backdrop-blur-xl lg:flex-row lg:items-center lg:justify-between">
         <Link href="/" className="flex items-center gap-3 rounded-2xl">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-cyan-600 text-base font-black text-slate-950 shadow-lg shadow-sky-500/25 ring-1 ring-white/20">
+          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-cyan-600 text-lg font-black text-slate-950 shadow-lg shadow-sky-500/20 ring-1 ring-white/20">
             S
           </span>
           <span>
-            <span className="block text-[10px] font-semibold uppercase tracking-[0.22em] text-cyan-300/80">
+            <span className="block text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300/80">
               Crew health
             </span>
-            <span className="block text-lg font-semibold leading-tight tracking-tight text-white">SageCare</span>
+            <span className="block text-2xl font-bold leading-tight tracking-tight text-white">SageCare</span>
           </span>
         </Link>
 
@@ -50,7 +70,17 @@ export function SiteHeader() {
           })}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <div aria-label={`Coordinated Universal Time ${utcTime}`} className="mr-1 flex items-center gap-3 rounded-xl border border-sky-400/20 bg-sky-500/[0.08] px-3 py-2">
+            <span aria-hidden className="h-2.5 w-2.5 rounded-full bg-sky-400 shadow-[0_0_12px_currentColor]" />
+            <span>
+              <span className="block text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">Mission clock · UTC</span>
+              <time className="block font-mono text-lg font-bold leading-tight tabular-nums text-sky-200" suppressHydrationWarning>{utcTime}</time>
+            </span>
+            <span className="rounded-full bg-sky-500/10 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-sky-200">
+              {timePhase}
+            </span>
+          </div>
           <span className="hidden text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500 sm:block">
             Profile
           </span>

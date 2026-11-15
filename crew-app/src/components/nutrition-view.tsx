@@ -288,7 +288,7 @@ export function NutritionView() {
   }));
 
   return (
-    <main className="px-4 py-5 sm:px-6 lg:px-10 lg:py-8">
+    <main className="nutrition-page px-4 py-5 sm:px-6 lg:px-10 lg:py-8">
       <div className="mx-auto max-w-7xl space-y-6">
         <section className="panel rounded-[26px] p-5 sm:p-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -298,8 +298,7 @@ export function NutritionView() {
                 Food, fluid and fuel
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
-                Scan a package or search the catalogue, choose the meal and portion, then check each nutrient against
-                your daily target.
+                Search or scan food, set a portion, and track today&apos;s intake.
               </p>
               <p className="mt-2 text-xs text-slate-500 tabular-nums">
                 {profile.sex} · {profile.age} y · {profile.heightCm} cm · {profile.weightKg} kg ·{" "}

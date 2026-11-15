@@ -127,11 +127,11 @@ export function DashboardView() {
               </div>
 
               <div className="rounded-2xl border border-sky-400/20 bg-gradient-to-br from-sky-500/15 via-slate-900/40 to-slate-900/40 px-4 py-3 text-right">
-                <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Ship time</p>
+                <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Mission day</p>
                 <p className="mt-0.5 text-xl font-semibold tracking-tight text-sky-200 tabular-nums">
-                  {profile.missionDay} • 14:32
+                  {profile.missionDay}
                 </p>
-                <p className="text-xs text-slate-400 tabular-nums">UTC 18:32 • MET 43:21</p>
+                <p className="text-xs text-slate-400">Live UTC clock in the header</p>
               </div>
             </div>
 
@@ -154,7 +154,7 @@ export function DashboardView() {
                         {metric.label}
                       </p>
                       <div className="mt-1.5 flex items-baseline gap-1.5">
-                        <span className="text-[2.1rem] font-semibold leading-none tracking-tight text-white tabular-nums">
+                        <span className="text-[2.5rem] font-bold leading-none tracking-tight text-white tabular-nums sm:text-5xl">
                           {metric.value}
                         </span>
                         <span className="text-xs font-medium text-slate-400">{metric.unit}</span>
@@ -390,12 +390,12 @@ export function DashboardView() {
                 <SectionLabel>Daily plan</SectionLabel>
                 <h2 className="mt-1.5 text-2xl font-semibold tracking-tight text-white">Automatic tracking</h2>
               </div>
-              <button
-                type="button"
-                className="rounded-full border border-sky-400/30 bg-sky-500/15 px-3.5 py-1.5 text-xs font-semibold text-sky-100 transition-colors duration-200 hover:border-sky-300/50 hover:bg-sky-500/25 hover:text-white"
+              <Link
+                href="/monitoring"
+                className="rounded-full border border-sky-400/30 bg-sky-500/15 px-3.5 py-2 text-sm font-semibold text-sky-100 transition-colors duration-200 hover:border-sky-300/50 hover:bg-sky-500/25 hover:text-white"
               >
                 Review tasks
-              </button>
+              </Link>
             </div>
 
             <div className="space-y-3">

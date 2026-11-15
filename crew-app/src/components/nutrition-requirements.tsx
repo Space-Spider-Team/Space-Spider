@@ -84,13 +84,12 @@ export function NutritionRequirements() {
   ];
 
   return (
-    <section className="panel rounded-[26px] p-5 sm:p-6">
+    <section className="panel nutrition-requirements rounded-[26px] p-5 sm:p-6">
       <div className="mb-5">
         <SectionLabel>Daily targets</SectionLabel>
         <h2 className="mt-1.5 text-xl font-semibold tracking-tight text-white">Requirements and today&apos;s coverage</h2>
         <p className="mt-1 text-sm leading-5 text-slate-400">
-          Energy and macronutrient targets use the selected crew profile. Percentage is shown against the energy goal
-          or the upper end of each target range.
+          Targets use the selected crew profile; coverage shows progress toward each goal.
         </p>
       </div>
 
@@ -125,7 +124,7 @@ export function NutritionRequirements() {
         <form className="tile rounded-2xl p-4" onSubmit={(event) => event.preventDefault()}>
           <h3 className="font-semibold text-white">Calculate a personal estimate</h3>
           <p className="mt-1 text-xs leading-5 text-slate-400">
-            Adult EER formula. Enter age, body mass and height to update energy and nutrient references.
+            Change these values to update the adult estimate.
           </p>
           <div className="mt-3 grid grid-cols-2 gap-3">
             <label className="text-xs font-medium text-slate-300">

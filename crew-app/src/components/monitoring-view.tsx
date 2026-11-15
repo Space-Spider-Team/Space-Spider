@@ -457,19 +457,19 @@ export function MonitoringView() {
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Resting HR · personal baseline</p>
               <p className="mt-2 text-2xl font-semibold text-white tabular-nums">{restingTrend[6]} <span className="text-sm text-slate-400">bpm</span></p>
               <p className="mb-3 text-xs text-slate-500">7-day trend · dashed line is this crew member&apos;s {baseline} bpm reference</p>
-              <LineChart title="Resting HR by day" xLabel="Day · last 7 days" yLabel="bpm" minimum={Math.min(...restingTrend, baseline) - 5} maximum={Math.max(...restingTrend, baseline) + 5} series={[{ label: "Resting HR", values: restingTrend, color: "#c4b5fd" }, { label: "Personal baseline", values: Array(7).fill(baseline), color: "#fbbf24", dashed: true }]} />
+              <LineChart title="Resting HR by day" xLabel="Day · last 7 days" yLabel="bpm" minimum={Math.min(...restingTrend, baseline) - 5} maximum={Math.max(...restingTrend, baseline) + 5} series={[{ label: "Resting HR", values: restingTrend, color: "#9ba8bf" }, { label: "Personal baseline", values: Array(7).fill(baseline), color: "#b8a879", dashed: true }]} />
             </div>
             <div className="panel rounded-2xl p-4">
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">HRV · same metric throughout</p>
               <p className="mt-2 text-2xl font-semibold text-white tabular-nums">{hrvTrend[6]} <span className="text-sm text-slate-400">ms SDNN</span></p>
               <p className="mb-3 text-xs text-slate-500">Simulated daily/overnight average · personal reference {hrvBaseline} ms</p>
-              <LineChart title="HRV SDNN · 7-day average" xLabel="Day · last 7 days" yLabel="ms" minimum={Math.min(...hrvTrend, hrvBaseline) - 10} maximum={Math.max(...hrvTrend, hrvBaseline) + 10} series={[{ label: "SDNN", values: hrvTrend, color: "#5eead4" }, { label: "Personal reference", values: Array(7).fill(hrvBaseline), color: "#fbbf24", dashed: true }]} />
+              <LineChart title="HRV SDNN · 7-day average" xLabel="Day · last 7 days" yLabel="ms" minimum={Math.min(...hrvTrend, hrvBaseline) - 10} maximum={Math.max(...hrvTrend, hrvBaseline) + 10} series={[{ label: "SDNN", values: hrvTrend, color: "#86aaa5" }, { label: "Personal reference", values: Array(7).fill(hrvBaseline), color: "#b8a879", dashed: true }]} />
               <p className="mt-2 text-[10px] leading-4 text-slate-500">HRV is compared to this astronaut&apos;s own reference, not a universal cutoff. HF/LF power are not plotted on the SDNN axis.</p>
             </div>
           </div>
           <div className="mt-4 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
             <div className="panel rounded-2xl p-4">
-              <LineChart title="Heart rate · last 24 hours" xLabel="Time · simulated 24-hour window" yLabel="bpm" minimum={50} maximum={110} series={[{ label: "Heart rate", values: hrHourly, color: "#a78bfa" }]} />
+              <LineChart title="Heart rate · last 24 hours" xLabel="Time · simulated 24-hour window" yLabel="bpm" minimum={50} maximum={110} series={[{ label: "Heart rate", values: hrHourly, color: "#9192b0" }]} />
               <p className="mt-2 text-[10px] text-slate-500">Representative simulation, not a connected 1 Hz stream.</p>
             </div>
             <div className="panel rounded-2xl p-4">
@@ -483,7 +483,7 @@ export function MonitoringView() {
                 <button className="min-h-9 rounded-lg bg-sky-500/20 px-3 text-xs font-semibold text-sky-100 ring-1 ring-inset ring-sky-400/25">Add reading</button>
               </form>
               <div className="mt-3">
-                <LineChart title="Blood pressure · last 7 readings" xLabel="Reading · repeated measurements" yLabel="mmHg" minimum={50} maximum={170} series={[{ label: "Systolic", values: systolic, color: "#fb7185" }, { label: "Diastolic", values: diastolic, color: "#38bdf8" }]} referenceLines={[{ value: 120, label: "120 systolic" }, { value: 130, label: "130 systolic" }, { value: 80, label: "80 diastolic" }, { value: 90, label: "90 diastolic" }]} />
+                <LineChart title="Blood pressure · last 7 readings" xLabel="Reading · repeated measurements" yLabel="mmHg" minimum={50} maximum={170} series={[{ label: "Systolic", values: systolic, color: "#bd8f96" }, { label: "Diastolic", values: diastolic, color: "#84aab5" }]} referenceLines={[{ value: 120, label: "120 systolic" }, { value: 130, label: "130 systolic" }, { value: 80, label: "80 diastolic" }, { value: 90, label: "90 diastolic" }]} />
               </div>
               <p className="mt-2 text-[10px] leading-4 text-slate-500">2025 AHA/ACC adult categories: Normal &lt;120 and &lt;80; Elevated 120–129 and &lt;80; Stage 1 130–139 or 80–89; Stage 2 ≥140 or ≥90. General adult references only. A single reading is not a hypertension diagnosis.</p>
             </div>
@@ -568,7 +568,7 @@ export function MonitoringView() {
                 <p className="mt-1 text-xs text-slate-400">Exercise-specific max load and weekly volume load; different exercises are not combined.</p>
                 <p className="mt-3 text-sm text-slate-200">This week&apos;s volume load: <strong className="tabular-nums">{volumeThisWeek.toLocaleString()} kg × repetitions</strong></p>
                 <div className="mt-3"><VolumeChart records={record.exercise} /></div>
-                {strengthGroups.length ? strengthGroups.map((group) => <LineChart key={group.name} title={`${group.name} · max load`} xLabel="Session order" yLabel="kg" minimum={0} maximum={Math.max(10, ...group.rows.map((item) => item.loadKg ?? 0)) * 1.2} series={[{ label: "Completed load", values: group.rows.map((item) => item.loadKg ?? 0), color: "#5eead4" }]} />) : <p className="mt-2 text-xs text-slate-500">Log comparable sessions for an exercise-specific trend.</p>}
+                {strengthGroups.length ? strengthGroups.map((group) => <LineChart key={group.name} title={`${group.name} · max load`} xLabel="Session order" yLabel="kg" minimum={0} maximum={Math.max(10, ...group.rows.map((item) => item.loadKg ?? 0)) * 1.2} series={[{ label: "Completed load", values: group.rows.map((item) => item.loadKg ?? 0), color: "#86aaa5" }]} />) : <p className="mt-2 text-xs text-slate-500">Log comparable sessions for an exercise-specific trend.</p>}
                 {record.exercise.some((item) => item.kind === "cycle" && item.power && item.heartRate) ? <WorkloadChart title="Cardiorespiratory response · cycle" xLabel="Power (W)" xValues={record.exercise.filter((item) => item.kind === "cycle" && item.power && item.heartRate).map((item) => item.power!)} hrValues={record.exercise.filter((item) => item.kind === "cycle" && item.power && item.heartRate).map((item) => item.heartRate!)} /> : null}
                 {record.exercise.some((item) => item.kind === "treadmill" && item.speed && item.heartRate) ? <WorkloadChart title="Cardiorespiratory response · treadmill" xLabel="Speed (km/h)" xValues={record.exercise.filter((item) => item.kind === "treadmill" && item.speed && item.heartRate).map((item) => item.speed!)} hrValues={record.exercise.filter((item) => item.kind === "treadmill" && item.speed && item.heartRate).map((item) => item.heartRate!)} /> : null}
                 <p className="mt-3 text-[10px] leading-4 text-slate-500">Peak force and torque are recorded only when provided by suitable equipment. Calories, HR and breathing rate are not strength measurements. NASA example ARED protocols cite 6–12 reps and 3–5 sets; not a prescription.</p>
@@ -592,9 +592,9 @@ export function MonitoringView() {
               <h3 className="font-semibold text-white">Synchronized EVA trend panels</h3>
               <p className="mt-1 text-xs text-slate-400">Each parameter has its own unit and scale. All charts use the same simulated elapsed-time stamps.</p>
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                <LineChart title="SpO₂ · percentage" xLabel="Same timestamp · elapsed time" yLabel="%" minimum={90} maximum={100} series={[{ label: "SpO₂ · simulated", values: [97, 97, 96, 97, 98, 97, latestSpO2], color: "#c4b5fd" }]} />
-                <LineChart title="PIO₂ · inspired oxygen" xLabel="Same timestamp · elapsed time" yLabel="mmHg" minimum={100} maximum={380} series={[{ label: "PIO₂ · simulated", values: [174, 176, 175, 173, 175, 176, 175], color: "#5eead4" }]} referenceLines={[{ value: 127, label: "127 lower reference" }, { value: 145, label: "Normoxia 145–155" }, { value: 155, label: "155" }, { value: 356, label: "356 upper reference" }]} />
-                <LineChart title="PICO₂ · inspired carbon dioxide" xLabel="Same timestamp · elapsed time" yLabel="mmHg" minimum={0} maximum={20} series={[{ label: "PICO₂ · simulated", values: [2.7, 2.9, 3, 3.1, 2.8, 3, 3], color: "#fb923c" }]} referenceLines={[{ value: 4, label: ">4" }, { value: 7, label: ">7" }, { value: 10, label: ">10" }, { value: 12.5, label: ">12.5" }, { value: 15, label: ">15" }]} />
+                <LineChart title="SpO₂ · percentage" xLabel="Same timestamp · elapsed time" yLabel="%" minimum={90} maximum={100} series={[{ label: "SpO₂ · simulated", values: [97, 97, 96, 97, 98, 97, latestSpO2], color: "#9ba8bf" }]} />
+                <LineChart title="PIO₂ · inspired oxygen" xLabel="Same timestamp · elapsed time" yLabel="mmHg" minimum={100} maximum={380} series={[{ label: "PIO₂ · simulated", values: [174, 176, 175, 173, 175, 176, 175], color: "#86aaa5" }]} referenceLines={[{ value: 127, label: "127 lower reference" }, { value: 145, label: "Normoxia 145–155" }, { value: 155, label: "155" }, { value: 356, label: "356 upper reference" }]} />
+                <LineChart title="PICO₂ · inspired carbon dioxide" xLabel="Same timestamp · elapsed time" yLabel="mmHg" minimum={0} maximum={20} series={[{ label: "PICO₂ · simulated", values: [2.7, 2.9, 3, 3.1, 2.8, 3, 3], color: "#b99879" }]} referenceLines={[{ value: 4, label: ">4" }, { value: 7, label: ">7" }, { value: 10, label: ">10" }, { value: 12.5, label: ">12.5" }, { value: 15, label: ">15" }]} />
                 <LineChart title="Suit pressure · actual and configured set-point" xLabel="Same timestamp · elapsed time" yLabel="psia" minimum={3.5} maximum={5.1} series={[{ label: "Actual pressure · simulated", values: [4.28, 4.31, 4.3, 4.29, 4.32, 4.3, 4.3], color: "#38bdf8" }, { label: "Example set-point", values: Array(7).fill(4.3), color: "#fbbf24", dashed: true }]} referenceLines={[{ value: 4.05, label: "−0.25 psi tolerance" }, { value: 4.55, label: "+0.25 psi tolerance" }]} />
               </div>
               <div className="mt-3 grid gap-3 md:grid-cols-2">

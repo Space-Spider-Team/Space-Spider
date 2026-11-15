@@ -43,7 +43,7 @@ export function ForYouView() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2 text-sm">
-              <span className="rounded-full border border-slate-700/80 bg-slate-900/70 px-3 py-1.5 text-slate-300">
+              <span className="profile-role rounded-full px-3 py-1.5">
                 {profile.role}
               </span>
               <span className="rounded-full border border-slate-700/80 bg-slate-900/70 px-3 py-1.5 text-slate-300 tabular-nums">
@@ -54,9 +54,6 @@ export function ForYouView() {
               </span>
               <span className="rounded-full border border-emerald-400/25 bg-emerald-500/10 px-3 py-1.5 font-medium text-emerald-200">
                 {profile.targets.energy.toLocaleString()} kcal target
-              </span>
-              <span className="rounded-full border border-slate-700/80 bg-slate-900/70 px-3 py-1.5 font-medium text-slate-400">
-                Offline-ready
               </span>
             </div>
           </div>

@@ -1,29 +1,92 @@
 @import "tailwindcss";
 
 :root {
-  --background: #080810;
-  --foreground: #e9e7f2;
-  --surface: #100f1b;
-  --surface-2: #171625;
-  --border: #29263c;
-  --accent: #a78bfa;
+  --background: #0b131d;
+  --foreground: #e8eff4;
+  --surface: #121e2a;
+  --surface-2: #192633;
+  --surface-control: #202e3b;
+  --border: #526271;
+  --border-accent: #527b87;
+  --border-status: #536875;
+  --text-body: #c1ccd4;
+  --text-muted: #a5b3be;
+  --text-accent: #a3c4ca;
+  --text-good: #b1cbb9;
+  --text-watch: #d0bd94;
+  --text-alert: #d4a8ad;
+  --text-info: #c0b8d2;
+  --palette-sky-100: #d4e0df;
+  --palette-sky-200: #bfd1d2;
+  --palette-sky-300: #a8c2c6;
+  --palette-sky-400: #89adb5;
+  --palette-sky-500: #668f99;
+  --palette-sky-600: #4d707b;
+  --palette-cyan-300: #8eafad;
+  --palette-cyan-400: #779d9c;
+  --palette-cyan-500: #5d8586;
+  --palette-emerald-300: #a4c1ae;
+  --palette-emerald-400: #84a992;
+  --palette-emerald-500: #688c78;
+  --palette-amber-300: #c5b489;
+  --palette-amber-400: #ad986b;
+  --palette-amber-500: #907b56;
+  --palette-rose-300: #c89da3;
+  --palette-rose-400: #ad7f87;
+  --palette-rose-500: #8e646d;
+  --palette-violet-300: #b2abc7;
+  --palette-violet-400: #9892b0;
+  --palette-violet-700: #595873;
+  --palette-orange-300: #c2a184;
+  --palette-orange-400: #a98769;
+  --palette-orange-500: #87694f;
+  --palette-teal-300: #8eafad;
+  --palette-teal-500: #688d8a;
+  --palette-teal-700: #3e6867;
+  --palette-indigo-300: #a2a2b8;
+  --palette-indigo-500: #777990;
+  --palette-indigo-600: #62647d;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --color-sky-100: #f3efff;
-  --color-sky-200: #ddd3ff;
-  --color-sky-300: #c4b2ff;
-  --color-sky-400: #a78bfa;
-  --color-sky-500: #8b6de8;
-  --color-sky-600: #704fc9;
+  --font-sans: Helvetica, Arial, sans-serif;
+  --font-mono: Consolas, "Courier New", monospace;
+  --color-sky-100: var(--palette-sky-100);
+  --color-sky-200: var(--palette-sky-200);
+  --color-sky-300: var(--palette-sky-300);
+  --color-sky-400: var(--palette-sky-400);
+  --color-sky-500: var(--palette-sky-500);
+  --color-sky-600: var(--palette-sky-600);
+  --color-cyan-300: var(--palette-cyan-300);
+  --color-cyan-400: var(--palette-cyan-400);
+  --color-cyan-500: var(--palette-cyan-500);
+  --color-emerald-300: var(--palette-emerald-300);
+  --color-emerald-400: var(--palette-emerald-400);
+  --color-emerald-500: var(--palette-emerald-500);
+  --color-amber-300: var(--palette-amber-300);
+  --color-amber-400: var(--palette-amber-400);
+  --color-amber-500: var(--palette-amber-500);
+  --color-rose-300: var(--palette-rose-300);
+  --color-rose-400: var(--palette-rose-400);
+  --color-rose-500: var(--palette-rose-500);
+  --color-violet-300: var(--palette-violet-300);
+  --color-violet-400: var(--palette-violet-400);
+  --color-violet-700: var(--palette-violet-700);
+  --color-orange-300: var(--palette-orange-300);
+  --color-orange-400: var(--palette-orange-400);
+  --color-orange-500: var(--palette-orange-500);
+  --color-teal-300: var(--palette-teal-300);
+  --color-teal-500: var(--palette-teal-500);
+  --color-teal-700: var(--palette-teal-700);
+  --color-indigo-300: var(--palette-indigo-300);
+  --color-indigo-500: var(--palette-indigo-500);
+  --color-indigo-600: var(--palette-indigo-600);
 }
 
 html {
-  background: #080810;
+  background: var(--background);
   color-scheme: dark;
   -webkit-tap-highlight-color: transparent;
   scroll-behavior: smooth;
@@ -33,15 +96,152 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(46rem 26rem at 8% -14%, rgba(139, 109, 232, 0.13), transparent 62%),
-    radial-gradient(44rem 26rem at 96% -6%, rgba(45, 212, 191, 0.08), transparent 60%),
-    radial-gradient(40rem 24rem at 50% 110%, rgba(16, 185, 129, 0.05), transparent 62%),
-    linear-gradient(180deg, #080810 0%, #0a0a14 55%, #080810 100%);
+    radial-gradient(46rem 26rem at 8% -14%, rgba(100, 132, 158, 0.12), transparent 62%),
+    radial-gradient(44rem 26rem at 96% -6%, rgba(86, 137, 135, 0.07), transparent 60%),
+    radial-gradient(40rem 24rem at 50% 110%, rgba(90, 129, 118, 0.04), transparent 62%),
+    linear-gradient(180deg, #0b131d 0%, #101a24 55%, #0b131d 100%);
   background-attachment: fixed;
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+html[data-theme="day"] {
+  color-scheme: light;
+  --background: #cbd7dd;
+  --foreground: #172935;
+  --surface: #dbe4e8;
+  --surface-2: #cedae0;
+  --surface-control: #bdcbd2;
+  --border: #a6b8c2;
+  --border-accent: #577a83;
+  --border-status: #879ba4;
+  --text-body: #293f4b;
+  --text-muted: #3e5663;
+  --text-accent: #345c67;
+  --text-good: #315b43;
+  --text-watch: #665326;
+  --text-alert: #703d47;
+  --text-info: #51496b;
+  --accent: #4d7c87;
+  --palette-sky-100: #e3ebec;
+  --palette-sky-200: #c9dadd;
+  --palette-sky-300: #a9c5ca;
+  --palette-sky-400: #789eaa;
+  --palette-sky-500: #547c88;
+  --palette-sky-600: #3d616d;
+  --palette-cyan-300: #91b9b5;
+  --palette-cyan-400: #6d9994;
+  --palette-cyan-500: #4e7976;
+  --palette-emerald-300: #a3c1aa;
+  --palette-emerald-400: #739b7e;
+  --palette-emerald-500: #547d62;
+  --palette-amber-300: #c8b77e;
+  --palette-amber-400: #a78d55;
+  --palette-amber-500: #846b3d;
+  --palette-rose-300: #c7989d;
+  --palette-rose-400: #a8757e;
+  --palette-rose-500: #85535e;
+  --palette-violet-300: #aea5c5;
+  --palette-violet-400: #8e83a9;
+  --palette-violet-700: #5a526f;
+  --palette-orange-300: #c7a185;
+  --palette-orange-400: #a88365;
+  --palette-orange-500: #846447;
+  --palette-teal-300: #91b9b5;
+  --palette-teal-500: #5e8986;
+  --palette-teal-700: #3e6867;
+  --palette-indigo-300: #aaaac0;
+  --palette-indigo-500: #7c7f99;
+  --palette-indigo-600: #62647d;
+  background: var(--background);
+}
+
+html[data-theme="day"] body {
+  color: var(--foreground);
+  background:
+    radial-gradient(46rem 26rem at 8% -14%, rgba(91, 140, 155, 0.12), transparent 62%),
+    radial-gradient(44rem 26rem at 96% -6%, rgba(101, 145, 137, 0.09), transparent 60%),
+    linear-gradient(180deg, #d4dfe4 0%, #cbd7dd 58%, #c1cfd6 100%);
+}
+
+html[data-theme="day"] body::before {
+  background-image: radial-gradient(rgba(71, 112, 139, 0.08) 1px, transparent 1px);
+}
+
+html[data-theme="day"] .panel { background-color: var(--surface); border-color: var(--border); box-shadow: 0 14px 36px -28px rgba(28, 55, 75, 0.3); }
+html[data-theme="day"] .tile { background-color: var(--surface-2); border-color: var(--border); }
+html[data-theme="day"] :where([class*="text-white"], [class*="text-slate-100"], [class*="text-slate-200"]) { color: var(--foreground) !important; }
+html[data-theme="day"] :where([class*="text-slate-300"], [class*="text-slate-400"]) { color: var(--text-body) !important; }
+html[data-theme="day"] :where([class*="text-slate-500"], [class*="text-slate-600"]) { color: var(--text-muted) !important; }
+html[data-theme="day"] :where([class*="bg-slate-950"], [class*="bg-slate-900"]) { background-color: var(--surface-control) !important; }
+html[data-theme="day"] :where([class*="bg-slate-800"]) { background-color: #b3c4cc !important; }
+html[data-theme="day"] :where([class*="bg-slate-700"]) { background-color: #acbdc5 !important; }
+html[data-theme="day"] :where([class*="border-slate-800"], [class*="border-slate-700"], [class*="border-slate-600"]) { border-color: var(--border) !important; }
+html[data-theme="day"] :where([class*="border-sky-"], [class*="border-cyan-"]) { border-color: var(--border-accent) !important; }
+html[data-theme="day"] :where([class*="border-emerald-"], [class*="border-amber-"], [class*="border-rose-"]) { border-color: var(--border-status) !important; }
+html[data-theme="day"] .fixed.bg-slate-950\/80 { background-color: rgba(9, 18, 28, 0.84) !important; }
+html[data-theme="day"] [class*="bg-[#"] { background-color: var(--surface) !important; }
+html[data-theme="day"] [class*="placeholder:text-slate-500"]::placeholder { color: #3e5663 !important; opacity: 1; }
+html[data-theme="day"] .panel svg text { fill: #314955 !important; }
+html[data-theme="day"] .panel svg polyline,
+html[data-theme="day"] .panel svg circle { filter: brightness(0.72) saturate(0.82); }
+html[data-theme="day"] :where([class*="hover:text-white"]:hover) { color: #10283e !important; }
+html[data-theme="day"] :where([class*="hover:bg-slate-800"]:hover, [class*="hover:bg-slate-900"]:hover) { background-color: #a9bdc6 !important; }
+html[data-theme="day"] :where([class*="text-sky-"], [class*="text-cyan-"], [class*="text-teal-"]) { color: var(--text-accent) !important; }
+
+/* Reduce high-saturation accents throughout the interface while keeping status colors distinct. */
+html:not([data-theme="day"]) :where([class*="text-white"], [class*="text-slate-100"], [class*="text-slate-200"]) { color: var(--foreground) !important; }
+html:not([data-theme="day"]) :where([class*="text-slate-300"], [class*="text-slate-400"]) { color: var(--text-body) !important; }
+html:not([data-theme="day"]) :where([class*="text-sky-"], [class*="text-cyan-"], [class*="text-teal-"]) { color: var(--text-accent) !important; }
+html:not([data-theme="day"]) :where([class*="text-slate-500"], [class*="text-slate-600"]) { color: var(--text-muted) !important; }
+html:not([data-theme="day"]) [class*="placeholder:text-slate-500"]::placeholder { color: var(--text-muted) !important; opacity: 1; }
+html:not([data-theme="day"]) :where([class*="text-emerald-"], [class*="text-green-"]) { color: var(--text-good) !important; }
+html:not([data-theme="day"]) :where([class*="text-amber-"], [class*="text-orange-"]) { color: var(--text-watch) !important; }
+html:not([data-theme="day"]) :where([class*="text-rose-"], [class*="text-red-"]) { color: var(--text-alert) !important; }
+html:not([data-theme="day"]) :where([class*="text-violet-"], [class*="text-purple-"], [class*="text-indigo-"]) { color: var(--text-info) !important; }
+html:not([data-theme="day"]) :where([class*="border-sky-"], [class*="border-cyan-"]) { border-color: var(--border-accent) !important; }
+html:not([data-theme="day"]) :where([class*="border-emerald-"], [class*="border-amber-"], [class*="border-rose-"], [class*="border-violet-"]) { border-color: var(--border-status) !important; }
+
+html[data-theme="day"] :where([class*="text-emerald-"], [class*="text-green-"]) { color: var(--text-good) !important; }
+html[data-theme="day"] :where([class*="text-amber-"], [class*="text-orange-"]) { color: var(--text-watch) !important; }
+html[data-theme="day"] :where([class*="text-rose-"], [class*="text-red-"]) { color: var(--text-alert) !important; }
+html[data-theme="day"] :where([class*="text-violet-"], [class*="text-purple-"], [class*="text-indigo-"]) { color: var(--text-info) !important; }
+
+/* Keep dense labels readable and give the key hierarchy more breathing room. */
+:where([class~="text-[9px]"]) { font-size: 0.6875rem !important; line-height: 1.4 !important; }
+:where([class~="text-[10px]"], [class~="text-[11px]"]) { font-size: 0.75rem !important; line-height: 1.45 !important; }
+h1 { line-height: 1.12; letter-spacing: -0.035em; }
+h2 { line-height: 1.2; letter-spacing: -0.025em; }
+
+main .panel { padding: 1.375rem; }
+@media (max-width: 639px) {
+  main .panel { padding: 1.125rem; }
+}
+
+main.nutrition-page > div > section.panel,
+main.nutrition-page > div > nav,
+main.nutrition-page > div > .grid > div > section.panel {
+  border-radius: 1.25rem;
+}
+
+main.nutrition-page .panel { padding: 1.5rem; }
+main.nutrition-page button { min-height: 2.75rem; }
+main.nutrition-page input:not([type="checkbox"]) { min-height: 2.75rem; font-size: 1rem; }
+main.nutrition-page input,
+main.nutrition-page select { color: #d6e0e8; }
+html[data-theme="day"] main.nutrition-page input,
+html[data-theme="day"] main.nutrition-page select { color: #172935; }
+.nutrition-requirements { padding: 1.5rem; }
+.nutrition-requirements input,
+.nutrition-requirements select { min-height: 2.75rem; font-size: 1rem; }
+.profile-role { color: var(--foreground); background: var(--surface-control); border: 1px solid var(--border); }
+@media (max-width: 639px) {
+  main.nutrition-page .panel { padding: 1.125rem; }
+  .nutrition-requirements { padding: 1.125rem; }
 }
 
 /* Faint blueprint dot grid, fading out toward the middle of the page. */
@@ -51,7 +251,7 @@ body::before {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background-image: radial-gradient(rgba(196, 181, 253, 0.06) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(157, 181, 195, 0.055) 1px, transparent 1px);
   background-size: 22px 22px;
   -webkit-mask-image: radial-gradient(140% 90% at 50% 0%, #000 0%, transparent 72%);
   mask-image: radial-gradient(140% 90% at 50% 0%, #000 0%, transparent 72%);
@@ -62,7 +262,7 @@ body::before {
 }
 
 ::selection {
-  background: rgba(167, 139, 250, 0.28);
+  background: rgba(121, 164, 174, 0.32);
   color: #f8fafc;
 }
 
@@ -85,8 +285,8 @@ body::before {
   background: #334155;
 }
 
-:where(button, a, [tabindex]):focus-visible {
-  outline: 2px solid rgba(167, 139, 250, 0.9);
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid rgba(121, 164, 174, 0.9);
   outline-offset: 2px;
 }
 
@@ -94,6 +294,21 @@ input,
 button,
 a {
   touch-action: manipulation;
+}
+
+button:not(:disabled),
+a[href],
+[role="button"] {
+  cursor: pointer;
+}
+
+button,
+a[href] {
+  transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+button:disabled {
+  cursor: not-allowed;
 }
 
 @layer components {
@@ -109,7 +324,7 @@ a {
   /* Inset surface for tiles nested inside a panel. */
   .tile {
     background: var(--surface-2);
-    border: 1px solid rgba(27, 39, 64, 0.9);
+    border: 1px solid var(--border);
   }
 }
 
