@@ -17,17 +17,16 @@ import {
 const FOR_YOU_HRR: HrrKey[] = ["cardio", "nutrition", "sleep", "behavior", "renal"];
 
 export function ForYouView() {
-  const { profile, totals, fluid, mood, addFluid, setMood } = useCrew();
+  const { profile, totals, fluid, drinkFluid, mood, moodTrack, addFluid, setMood } = useCrew();
 
-  const priorities = buildPriorities(profile, totals, fluid, mood?.level);
+  const priorities = buildPriorities(profile, totals, fluid, mood?.level, moodTrack);
   const fluidPercent = pct(fluid, profile.targets.fluid);
   const remaining = Math.max(0, profile.targets.fluid - fluid);
 
   const hr = profile.metrics.find((metric) => metric.label === "Resting HR") ?? profile.metrics[0];
   const sleepMetric = profile.metrics.find((metric) => metric.label === "Sleep") ?? profile.metrics[3];
 
-  const moodTrack = [...profile.moodHistory, mood?.level ?? null].slice(-7);
-  const moodLabel = MOOD_SCALE.find((item) => item.level === mood?.level)?.label;
+    const moodLabel = MOOD_SCALE.find((item) => item.level === mood?.level)?.label;
 
   return (
     <main className="px-4 py-5 sm:px-6 lg:px-10 lg:py-8">
@@ -319,7 +318,7 @@ export function ForYouView() {
                 <button
                   type="button"
                   onClick={() => addFluid(-FLUID_STEP)}
-                  disabled={fluid <= 0}
+                  disabled={drinkFluid <= 0}
                   className="rounded-xl border border-slate-700/70 bg-slate-900/60 px-3 py-2.5 text-sm font-semibold text-slate-300 transition-colors hover:border-slate-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   −250 mL

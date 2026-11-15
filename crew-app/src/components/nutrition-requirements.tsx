@@ -4,10 +4,7 @@ import { useMemo, useState } from "react";
 import { useCrew } from "@/components/crew-provider";
 import { SectionLabel } from "@/components/ui";
 import { pct } from "@/lib/crew";
-
-function round(value: number) {
-  return Math.round(value);
-}
+import { calculateRequirements } from "@/lib/nutrition";
 
 export function NutritionRequirements() {
   const { profile, totals, fluid, markVitaminDTaken, vitaminDTaken } = useCrew();
@@ -16,33 +13,10 @@ export function NutritionRequirements() {
   const [weight, setWeight] = useState(String(profile.weightKg));
   const [height, setHeight] = useState(String(profile.heightCm));
 
-  const requirements = useMemo(() => {
-    const years = Number(age);
-    const kg = Number(weight);
-    const cm = Number(height);
-    if (!Number.isFinite(years) || !Number.isFinite(kg) || !Number.isFinite(cm) || years < 19 || kg <= 0 || cm <= 0) {
-      return null;
-    }
-
-    const metres = cm / 100;
-    const energy = sex === "Male"
-      ? 622 - 9.53 * years + 1.11 * (15.9 * kg + 539.6 * metres)
-      : 354 - 6.91 * years + 1.11 * (9.36 * kg + 726 * metres);
-    const calcium = { min: 1000, max: 1200 };
-    return {
-      energy: round(energy),
-      protein: { min: round(1.2 * kg), max: round(1.8 * kg) },
-      carbs: { min: round((energy * 0.45) / 4), max: round((energy * 0.65) / 4) },
-      fat: { min: round((energy * 0.2) / 9), max: round((energy * 0.35) / 9) },
-      fibre: sex === "Male" ? 38 : 25,
-      fluidLitres: sex === "Male" ? 2.5 : 2.1,
-      iron: sex === "Female" && years < 50 ? 18 : 8,
-      sodium: { min: 1500, max: 2300 },
-      potassium: sex === "Male" ? 3400 : 2600,
-      calcium,
-      vitaminC: sex === "Male" ? 125 : 110,
-    };
-  }, [age, height, sex, weight]);
+  const requirements = useMemo(
+    () => calculateRequirements({ sex, age: Number(age), weightKg: Number(weight), heightCm: Number(height) }),
+    [age, height, sex, weight],
+  );
 
   const tracked = [
     {
