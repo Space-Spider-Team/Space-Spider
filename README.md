@@ -43,14 +43,6 @@ npm run dev
 
 Open [Link](https://crew-app-beige.vercel.app/).
 
-Available project scripts:
-
-```powershell
-npm run lint
-npm run test
-npm run build
-```
-
 ## Supabase setup
 
 1. Create a Supabase project.
