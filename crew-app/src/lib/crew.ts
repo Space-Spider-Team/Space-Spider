@@ -1,3 +1,5 @@
+import { profileTargets } from "./nutrition";
+
 export type Tone = "stable" | "watch" | "alert" | "cyan" | "green" | "amber";
 
 /* ------------------------------------------------------------------ */
@@ -384,6 +386,8 @@ export type MealEntry = {
   nutrients?: FoodNutrient[];
   referenceCitations?: string[];
   loggedAt: string;
+  /** UTC calendar day the food was logged, YYYY-MM-DD. */
+  date?: string;
   source?: {
     record: "crew-entered" | "demo-seed" | "migrated";
     nutrients: "usda-fdc" | "demo-estimate" | "provided-reference";
@@ -493,8 +497,8 @@ export const PROFILES: Profile[] = [
       { label: "Sleep", value: "69%", tone: "stable", hrr: ["sleep"] },
       { label: "Immune", value: "83%", tone: "stable", hrr: ["immune"] },
     ],
-    targets: { energy: 2152, protein: 98, carbs: 296, fat: 66, fibre: 25, fluid: 2.1 },
-    ranges: { protein: { min: 78, max: 117 }, carbs: { min: 242, max: 350 }, fat: { min: 48, max: 84 } },
+    // Calculated from JSC-67378 for 30 y, 165 cm, 65 kg: 2,152 kcal, protein 78–117 g, ...
+    ...profileTargets({ sex: "Female", age: 30, heightCm: 165, weightKg: 65 }),
     sleep: { hours: 7.4, target: 8.2 },
     baseFluid: 1.9,
     seedMeals: [
@@ -570,8 +574,8 @@ export const PROFILES: Profile[] = [
       { label: "Sleep", value: "74%", tone: "watch", hrr: ["sleep"] },
       { label: "Immune", value: "88%", tone: "stable", hrr: ["immune"] },
     ],
-    targets: { energy: 2650, protein: 105, carbs: 365, fat: 81, fibre: 38, fluid: 2.5 },
-    ranges: { protein: { min: 84, max: 126 }, carbs: { min: 298, max: 431 }, fat: { min: 59, max: 103 } },
+    // Calculated from JSC-67378 for 30 y, 180 cm, 70 kg: 2,650 kcal, protein 84–126 g, ...
+    ...profileTargets({ sex: "Male", age: 30, heightCm: 180, weightKg: 70 }),
     sleep: { hours: 6.6, target: 8 },
     baseFluid: 1.6,
     seedMeals: [
@@ -648,7 +652,13 @@ export function formatRange(range: Range, unit: string): string {
   return `${range.min}–${range.max} ${unit}`;
 }
 
-export function makeMealEntry(food: Food, category: MealCategory, portions: number, time: string): MealEntry {
+export function makeMealEntry(
+  food: Food,
+  category: MealCategory,
+  portions: number,
+  time: string,
+  date?: string,
+): MealEntry {
   return {
     id: `${food.id}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     foodId: food.id,
@@ -664,6 +674,7 @@ export function makeMealEntry(food: Food, category: MealCategory, portions: numb
     })),
     referenceCitations: food.referenceCitations,
     loggedAt: time,
+    date,
     source: {
       record: "crew-entered",
       nutrients: food.usda ? "usda-fdc" : food.nutrientSource ?? "demo-estimate",
@@ -731,6 +742,8 @@ export function buildPriorities(
   totals: Macros,
   fluid: number,
   moodLevel?: number,
+  /** Recent daily check-ins, oldest first; null where none was recorded. */
+  recentMoodLevels: (number | null)[] = [],
 ): Priority[] {
   const items: Priority[] = [];
   const severity: Record<Tone, number> = { alert: 0, watch: 1, amber: 1, cyan: 2, green: 3, stable: 3 };
@@ -788,7 +801,16 @@ export function buildPriorities(
     });
   }
 
-  if (moodLevel !== undefined && moodLevel <= 2) {
+  const lastFive = recentMoodLevels.filter((level): level is number => level !== null).slice(-5);
+  const lowCount = lastFive.filter((level) => level <= 2).length;
+  if (lastFive.length >= 3 && lowCount >= 3) {
+    items.push({
+      tone: "watch",
+      title: `${lowCount} of the last ${lastFive.length} mood check-ins were low`,
+      body: "This describes your own check-ins over recent days. Review it with the crew medical officer in line with mission procedures.",
+      hrr: ["behavior", "team"],
+    });
+  } else if (moodLevel !== undefined && moodLevel <= 2) {
     items.push({
       tone: "alert",
       title: "Mood check-in flagged low",

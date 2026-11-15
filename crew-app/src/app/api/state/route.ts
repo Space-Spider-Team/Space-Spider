@@ -1,5 +1,6 @@
 import { connection } from "next/server";
 import { PROFILES } from "@/lib/crew";
+import { dayKey, parseLog } from "@/lib/records";
 import { listSources, readStates, writeStates, type StateDomain } from "@/lib/server/database";
 
 const profileIds = new Set(PROFILES.map((profile) => profile.id));
@@ -36,7 +37,7 @@ export async function POST(request: Request) {
   }
 
   const domain = payload.domain as StateDomain;
-  const states = payload.states as Record<string, unknown>;
+  let states = payload.states as Record<string, unknown>;
   const allowedIds = domain === "settings" ? new Set([appSettingsId]) : profileIds;
   if (Object.keys(states).some((id) => !allowedIds.has(id))) {
     return Response.json({ error: "Unknown crew profile." }, { status: 400 });
@@ -49,6 +50,18 @@ export async function POST(request: Request) {
     if (typeof activeProfileId !== "string" || !profileIds.has(activeProfileId)) {
       return Response.json({ error: "Choose a valid crew profile." }, { status: 400 });
     }
+  }
+
+  if (domain === "crew") {
+    // Keep only well-formed food, fluid and mood records; reject anything that is not a crew log.
+    const today = dayKey();
+    const cleaned: Record<string, unknown> = {};
+    for (const [profileId, raw] of Object.entries(states)) {
+      const log = parseLog(raw, today);
+      if (!log) return Response.json({ error: `Crew log for ${profileId} is not valid.` }, { status: 400 });
+      cleaned[profileId] = log;
+    }
+    states = cleaned;
   }
 
   try {
