@@ -14,7 +14,9 @@ import {
   macroCap,
   pct,
   rangeStatus,
+  scaleMacros,
   searchFoods,
+  type FoodNutrient,
   type Macros,
   type MealCategory,
   type Tone,
@@ -28,6 +30,13 @@ type BarcodeDetectorCtor = {
 };
 
 type ScanStatus = "starting" | "scanning" | "unsupported" | "denied";
+
+function formatNutrient(nutrient: FoodNutrient, portions: number): string {
+  if (nutrient.amount === null) return "Not reported";
+  const value = Number((nutrient.amount * portions).toFixed(2));
+  const prefix = nutrient.qualifier === "approx" ? "~" : nutrient.qualifier === "at-least" ? "At least " : "";
+  return `${prefix}${value} ${nutrient.unit}`;
+}
 
 const MACRO_TONE: Record<keyof Macros, Tone> = {
   energy: "cyan",
@@ -245,13 +254,7 @@ export function NutritionView() {
 
   const preview = useMemo<Macros>(() => {
     const base = selected?.macros ?? { energy: 0, protein: 0, carbs: 0, fat: 0, fibre: 0 };
-    return {
-      energy: Math.round(base.energy * portions),
-      protein: Math.round(base.protein * portions),
-      carbs: Math.round(base.carbs * portions),
-      fat: Math.round(base.fat * portions),
-      fibre: Math.round(base.fibre * portions),
-    };
+    return scaleMacros(base, portions);
   }, [selected, portions]);
 
   const fluidPercent = pct(fluid, profile.targets.fluid);
@@ -424,7 +427,7 @@ export function NutritionView() {
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-[13px] font-medium text-slate-100">{food.name}</span>
                           <span className="block text-[10px] uppercase tracking-[0.08em] text-slate-500">
-                            {food.kind} · {food.servingGrams} g · {food.macros.energy} kcal · {food.usda ? "USDA" : "demo estimate"}
+                            {food.kind} · {food.servingGrams} g · {food.macros.energy} kcal · {food.usda ? "USDA" : food.nutrientSource ? "Provided reference" : "Demo estimate"}
                           </span>
                         </span>
                         {active ? <span className="text-xs text-sky-300">✓</span> : null}
@@ -456,7 +459,12 @@ export function NutritionView() {
                     <TonePill tone="cyan">{selected.kind}</TonePill>
                   </div>
                   <div className="mt-3 rounded-xl border border-slate-700/60 bg-slate-950/40 px-3 py-2 text-xs leading-5 text-slate-400">
-                    {selected.usda ? (
+                    {selected.nutrientSource === "provided-reference" ? (
+                      <>
+                        Provided nutrient reference{selected.referenceCitations?.length ? ` ${selected.referenceCitations.join(", ")}` : ""} · values scale with portion. {selected.referenceNote ? `${selected.referenceNote}. ` : ""}
+                        Approximate and lower-bound values are marked.
+                      </>
+                    ) : selected.usda ? (
                       <>
                         USDA {selected.usda.dataType} reference ·{" "}
                         <a
@@ -509,7 +517,7 @@ export function NutritionView() {
                         Portion
                       </p>
                       <p className="text-[10px] text-slate-500 tabular-nums">
-                        {Math.round(selected.servingGrams * portions)} g total
+                        {Number((selected.servingGrams * portions).toFixed(2))} g total
                       </p>
                     </div>
                     <div className="grid grid-cols-4 gap-1.5">
@@ -547,6 +555,20 @@ export function NutritionView() {
                       </div>
                     ))}
                   </dl>
+
+                  {selected.nutrients?.length ? (
+                    <details className="mt-3 rounded-xl border border-slate-700/60 bg-slate-950/30 px-3 py-2">
+                      <summary className="cursor-pointer text-xs font-semibold text-slate-200">Micronutrients</summary>
+                      <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs sm:grid-cols-3">
+                        {selected.nutrients.map((nutrient) => (
+                          <div key={nutrient.label} className="flex justify-between gap-2">
+                            <dt className="text-slate-400">{nutrient.label}</dt>
+                            <dd className="font-medium text-slate-100 tabular-nums">{formatNutrient(nutrient, portions)}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </details>
+                  ) : null}
 
                   <button
                     type="button"
@@ -606,8 +628,16 @@ export function NutritionView() {
                                 {entry.source?.record === "crew-entered" ? "Crew entry" : entry.source?.record === "migrated" ? "Restored entry" : "Sample entry"}
                                 {entry.source?.nutrients === "usda-fdc" && entry.source.url ? (
                                   <> · <a href={entry.source.url} target="_blank" rel="noreferrer" className="underline underline-offset-2">USDA FoodData Central</a></>
-                                ) : " · Demo nutrient estimate"}
+                                ) : entry.source?.nutrients === "provided-reference" ? ` · Provided nutrient reference ${entry.referenceCitations?.join(", ") ?? ""}` : " · Demo nutrient estimate"}
                               </p>
+                              {entry.nutrients?.length ? (
+                                <details className="mt-1 text-[10px] text-slate-400">
+                                  <summary className="cursor-pointer">Micronutrients</summary>
+                                  <p className="mt-1 leading-5">
+                                    {entry.nutrients.map((nutrient) => `${nutrient.label}: ${formatNutrient(nutrient, 1)}`).join(" · ")}
+                                  </p>
+                                </details>
+                              ) : null}
                             </div>
                             <span className="shrink-0 text-xs font-semibold text-slate-300 tabular-nums">
                               {entry.macros.energy} kcal

@@ -112,6 +112,13 @@ export type Range = { min: number; max: number };
 
 export type MacroRanges = Partial<Record<keyof Macros, Range>>;
 
+export type FoodNutrient = {
+  label: string;
+  amount: number | null;
+  unit: string;
+  qualifier?: "approx" | "at-least";
+};
+
 export type Food = {
   id: string;
   name: string;
@@ -121,6 +128,10 @@ export type Food = {
   glyph: string;
   kind: string;
   macros: Macros;
+  nutrients?: FoodNutrient[];
+  nutrientSource?: "provided-reference";
+  referenceNote?: string;
+  referenceCitations?: string[];
   usda?: { fdcId: number; dataType: string; url: string };
 };
 
@@ -260,6 +271,94 @@ export const FOODS: Food[] = [
     kind: "Drink",
     macros: { energy: 60, protein: 0, carbs: 14, fat: 0, fibre: 0 },
   },
+  {
+    id: "scrambled-eggs",
+    name: "Scrambled eggs",
+    code: "8901234567902",
+    qr: "SPACE-FOOD:EGG-001",
+    servingGrams: 100,
+    glyph: "🥚",
+    kind: "Breakfast",
+    macros: { energy: 183.9, protein: 12.02, carbs: 2.81, fat: 13.6, fibre: 0 },
+    nutrientSource: "provided-reference",
+    referenceNote: "100 g formula-input equivalent",
+    referenceCitations: ["[cite: 5]", "[cite: 6]"],
+    nutrients: [
+      { label: "Iron", amount: 0.96, unit: "mg" },
+      { label: "Sodium", amount: 188.5, unit: "mg" },
+      { label: "Potassium", amount: 155.6, unit: "mg" },
+      { label: "Phosphorus", amount: 199, unit: "mg" },
+      { label: "Calcium", amount: 165.7, unit: "mg" },
+      { label: "Vitamin C", amount: 0.35, unit: "mg", qualifier: "approx" },
+      { label: "Intrinsic water", amount: 70.1, unit: "g", qualifier: "approx" },
+    ],
+  },
+  {
+    id: "chicken-pineapple-salad",
+    name: "Chicken-pineapple salad",
+    code: "8901234567903",
+    qr: "SPACE-FOOD:SAL-001",
+    servingGrams: 100,
+    glyph: "🥗",
+    kind: "Lunch",
+    macros: { energy: 155.3, protein: 15.29, carbs: 6.3, fat: 7.62, fibre: 1.06 },
+    nutrientSource: "provided-reference",
+    referenceNote: "100 g formula-input equivalent",
+    referenceCitations: ["[cite: 5]", "[cite: 6]"],
+    nutrients: [
+      { label: "Iron", amount: 0.73, unit: "mg", qualifier: "approx" },
+      { label: "Sodium", amount: 167.8, unit: "mg" },
+      { label: "Potassium", amount: 198.6, unit: "mg", qualifier: "approx" },
+      { label: "Phosphorus", amount: 128.3, unit: "mg", qualifier: "approx" },
+      { label: "Calcium", amount: 18.9, unit: "mg" },
+      { label: "Vitamin C", amount: 2.19, unit: "mg", qualifier: "approx" },
+      { label: "Intrinsic water", amount: 58.7, unit: "g", qualifier: "at-least" },
+    ],
+  },
+  {
+    id: "almonds",
+    name: "Almonds",
+    code: "8901234567904",
+    qr: "SPACE-FOOD:NUT-ALM-001",
+    servingGrams: 28.3,
+    glyph: "🌰",
+    kind: "Snack",
+    macros: { energy: 165.2, protein: 6.07, carbs: 5.67, fat: 14.46, fibre: 3.05 },
+    nutrientSource: "provided-reference",
+    referenceNote: "One demo reference unit",
+    referenceCitations: ["[cite: 4]", "[cite: 6]"],
+    nutrients: [
+      { label: "Iron", amount: 1.06, unit: "mg" },
+      { label: "Sodium", amount: 0, unit: "mg" },
+      { label: "Potassium", amount: 207.4, unit: "mg" },
+      { label: "Phosphorus", amount: 142.3, unit: "mg" },
+      { label: "Calcium", amount: 71.8, unit: "mg" },
+      { label: "Vitamin C", amount: 0, unit: "mg" },
+      { label: "Intrinsic water", amount: 1.21, unit: "g" },
+    ],
+  },
+  {
+    id: "cashews",
+    name: "Cashews",
+    code: "8901234567905",
+    qr: "SPACE-FOOD:NUT-CAS-001",
+    servingGrams: 28.3,
+    glyph: "🥜",
+    kind: "Snack",
+    macros: { energy: 150.8, protein: 4.92, carbs: 10.27, fat: 11.01, fibre: 1.16 },
+    nutrientSource: "provided-reference",
+    referenceNote: "One demo reference unit",
+    referenceCitations: ["[cite: 4]", "[cite: 6]"],
+    nutrients: [
+      { label: "Iron", amount: 1.7, unit: "mg" },
+      { label: "Sodium", amount: 1.36, unit: "mg" },
+      { label: "Potassium", amount: 180.6, unit: "mg" },
+      { label: "Phosphorus", amount: 150.6, unit: "mg" },
+      { label: "Calcium", amount: 11.9, unit: "mg" },
+      { label: "Vitamin C", amount: null, unit: "mg" },
+      { label: "Intrinsic water", amount: 1.36, unit: "g" },
+    ],
+  },
 ];
 
 export const PORTIONS = [0.5, 1, 1.5, 2] as const;
@@ -282,10 +381,12 @@ export type MealEntry = {
   portions: number;
   grams: number;
   macros: Macros;
+  nutrients?: FoodNutrient[];
+  referenceCitations?: string[];
   loggedAt: string;
   source?: {
     record: "crew-entered" | "demo-seed" | "migrated";
-    nutrients: "usda-fdc" | "demo-estimate";
+    nutrients: "usda-fdc" | "demo-estimate" | "provided-reference";
     url?: string;
   };
 };
@@ -512,11 +613,11 @@ export function addMacros(a: Macros, b: Macros): Macros {
 
 export function scaleMacros(m: Macros, factor: number): Macros {
   return {
-    energy: Math.round(m.energy * factor),
-    protein: Math.round(m.protein * factor),
-    carbs: Math.round(m.carbs * factor),
-    fat: Math.round(m.fat * factor),
-    fibre: Math.round(m.fibre * factor),
+    energy: Math.round(m.energy * factor * 100) / 100,
+    protein: Math.round(m.protein * factor * 100) / 100,
+    carbs: Math.round(m.carbs * factor * 100) / 100,
+    fat: Math.round(m.fat * factor * 100) / 100,
+    fibre: Math.round(m.fibre * factor * 100) / 100,
   };
 }
 
@@ -555,12 +656,17 @@ export function makeMealEntry(food: Food, category: MealCategory, portions: numb
     glyph: food.glyph,
     category,
     portions,
-    grams: Math.round(food.servingGrams * portions),
+    grams: Math.round(food.servingGrams * portions * 100) / 100,
     macros: scaleMacros(food.macros, portions),
+    nutrients: food.nutrients?.map((nutrient) => ({
+      ...nutrient,
+      amount: nutrient.amount === null ? null : Math.round(nutrient.amount * portions * 100) / 100,
+    })),
+    referenceCitations: food.referenceCitations,
     loggedAt: time,
     source: {
       record: "crew-entered",
-      nutrients: food.usda ? "usda-fdc" : "demo-estimate",
+      nutrients: food.usda ? "usda-fdc" : food.nutrientSource ?? "demo-estimate",
       url: food.usda?.url,
     },
   };
@@ -578,12 +684,17 @@ export function seedEntries(profile: Profile): MealEntry[] {
         glyph: food.glyph,
         category: seed.category,
         portions: seed.portions,
-        grams: Math.round(food.servingGrams * seed.portions),
+        grams: Math.round(food.servingGrams * seed.portions * 100) / 100,
         macros: scaleMacros(food.macros, seed.portions),
+        nutrients: food.nutrients?.map((nutrient) => ({
+          ...nutrient,
+          amount: nutrient.amount === null ? null : Math.round(nutrient.amount * seed.portions * 100) / 100,
+        })),
+        referenceCitations: food.referenceCitations,
         loggedAt: seed.time,
         source: {
           record: "demo-seed",
-          nutrients: food.usda ? "usda-fdc" : "demo-estimate",
+          nutrients: food.usda ? "usda-fdc" : food.nutrientSource ?? "demo-estimate",
           url: food.usda?.url,
         },
       },

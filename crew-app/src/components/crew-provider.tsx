@@ -78,9 +78,14 @@ function restoreLogs(raw: unknown, defaults: Record<string, ProfileLog>): Record
           macros: scaleMacros(food.macros, meal.portions),
           source: meal.source ?? {
             record: "migrated" as const,
-            nutrients: food.usda ? "usda-fdc" as const : "demo-estimate" as const,
+            nutrients: food.usda ? "usda-fdc" as const : food.nutrientSource ?? "demo-estimate" as const,
             url: food.usda?.url,
           },
+          nutrients: meal.nutrients ?? food.nutrients?.map((nutrient) => ({
+            ...nutrient,
+            amount: nutrient.amount === null ? null : Math.round(nutrient.amount * meal.portions * 100) / 100,
+          })),
+          referenceCitations: meal.referenceCitations ?? food.referenceCitations,
         } : meal;
       }),
     };
