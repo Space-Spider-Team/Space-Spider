@@ -241,3 +241,23 @@ export function setMoodRecord(log: ProfileLog, level: number, day: string, at: s
   const others = log.moodLog.filter((record) => record.date !== day);
   return { ...log, moodLog: [...others, { level, date: day, at, source: "crew-entered" }] };
 }
+
+/* ------------------------------------------------------------------ */
+/* Water in food                                                       */
+/* ------------------------------------------------------------------ */
+
+/** Nutrient label that carries a food's own water content (grams ≈ mL). */
+export const FOOD_WATER_LABEL = "Intrinsic water";
+
+/**
+ * Water contained in logged food, in litres. JSC-67378 counts it toward the
+ * daily fluid requirement ("met through food content and beverages").
+ * Foods without a recorded water value add nothing.
+ */
+export function foodWaterLitres(meals: MealEntry[]): number {
+  const ml = meals.reduce((sum, meal) => {
+    const water = meal.nutrients?.find((nutrient) => nutrient.label === FOOD_WATER_LABEL);
+    return sum + (water && typeof water.amount === "number" && water.amount > 0 ? water.amount : 0);
+  }, 0);
+  return Math.round(ml) / 1000;
+}

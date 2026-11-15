@@ -16,6 +16,7 @@ import {
   dayKey,
   defaultLog,
   fluidLitresForDay,
+  foodWaterLitres,
   mealsForDay,
   moodForDay,
   recentMood,
@@ -35,8 +36,12 @@ type CrewState = {
   selectProfile: (id: string) => void;
   /** Today's meals. */
   meals: MealEntry[];
-  /** Today's fluid in litres, from drinks and corrections recorded today. */
+  /** Today's fluid in litres: drinks plus the water in today's food (JSC-67378). */
   fluid: number;
+  /** Today's drinks in litres. */
+  drinkFluid: number;
+  /** Water contained in today's logged food, in litres. */
+  foodWater: number;
   /** Today's mood check-in. */
   mood?: MoodEntry;
   /** Every fluid record for this profile, all days. */
@@ -224,7 +229,9 @@ export function CrewProvider({ children }: { children: ReactNode }) {
   const vitaminDTaken = currentDay !== "" && log.vitaminD?.date === currentDay && log.vitaminD.taken === true;
   const todayMeals = useMemo(() => mealsForDay(log.meals, currentDay), [log.meals, currentDay]);
   const totals = useMemo(() => sumMacros(todayMeals), [todayMeals]);
-  const fluid = fluidLitresForDay(log.fluidLog, currentDay);
+  const drinkFluid = fluidLitresForDay(log.fluidLog, currentDay);
+  const foodWater = useMemo(() => foodWaterLitres(todayMeals), [todayMeals]);
+  const fluid = Math.round((drinkFluid + foodWater) * 1000) / 1000;
   const todayMood = moodForDay(log.moodLog, currentDay);
   const mood = todayMood ? { level: todayMood.level, date: todayMood.date } : undefined;
   const track = useMemo(
@@ -238,6 +245,8 @@ export function CrewProvider({ children }: { children: ReactNode }) {
     selectProfile,
     meals: todayMeals,
     fluid,
+    drinkFluid,
+    foodWater,
     mood,
     fluidLog: log.fluidLog,
     moodLog: log.moodLog,

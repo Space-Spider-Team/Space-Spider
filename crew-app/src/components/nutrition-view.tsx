@@ -240,7 +240,7 @@ function ScannerModal({
 }
 
 export function NutritionView() {
-  const { profile, meals, fluid, totals, addMeal, removeMeal, addFluid } = useCrew();
+  const { profile, meals, fluid, drinkFluid, foodWater, totals, addMeal, removeMeal, addFluid } = useCrew();
 
   const [scanOpen, setScanOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -772,6 +772,9 @@ export function NutritionView() {
                     {fluid.toFixed(2)} L
                   </p>
                   <p className="text-xs text-slate-400">of {profile.targets.fluid.toFixed(1)} L minimum today</p>
+                  <p className="text-xs text-slate-400" data-testid="fluid-breakdown">
+                    Drinks {drinkFluid.toFixed(2)} L · water in food {foodWater.toFixed(2)} L
+                  </p>
                   <div className="mt-2.5">
                     <Meter value={fluid} target={profile.targets.fluid} label="Hydration minimum" tone="cyan" height="h-2" />
                   </div>
@@ -792,7 +795,7 @@ export function NutritionView() {
                 <button
                   type="button"
                   onClick={() => addFluid(-FLUID_STEP)}
-                  disabled={fluid <= 0}
+                  disabled={drinkFluid <= 0}
                   className="rounded-xl border border-slate-700/70 bg-slate-900/60 px-3 py-2.5 text-sm font-semibold text-slate-300 transition-colors hover:border-slate-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   −250 mL

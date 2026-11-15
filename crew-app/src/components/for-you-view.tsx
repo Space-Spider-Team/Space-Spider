@@ -17,7 +17,7 @@ import {
 const FOR_YOU_HRR: HrrKey[] = ["cardio", "nutrition", "sleep", "behavior", "renal"];
 
 export function ForYouView() {
-  const { profile, totals, fluid, mood, moodTrack, addFluid, setMood } = useCrew();
+  const { profile, totals, fluid, drinkFluid, mood, moodTrack, addFluid, setMood } = useCrew();
 
   const priorities = buildPriorities(profile, totals, fluid, mood?.level, moodTrack);
   const fluidPercent = pct(fluid, profile.targets.fluid);
@@ -318,7 +318,7 @@ export function ForYouView() {
                 <button
                   type="button"
                   onClick={() => addFluid(-FLUID_STEP)}
-                  disabled={fluid <= 0}
+                  disabled={drinkFluid <= 0}
                   className="rounded-xl border border-slate-700/70 bg-slate-900/60 px-3 py-2.5 text-sm font-semibold text-slate-300 transition-colors hover:border-slate-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   −250 mL

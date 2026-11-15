@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { FOODS, PROFILES, makeMealEntry, sumMacros } from "./crew";
 import {
-  addFluidRecord, defaultLog, fluidLitresForDay, mealsForDay, moodForDay, parseLog,
+  addFluidRecord, defaultLog, fluidLitresForDay, foodWaterLitres, mealsForDay, moodForDay, parseLog,
   recentMood, restoreLogs, setMoodRecord, shiftDay, type ProfileLog,
 } from "./records";
 
@@ -93,5 +93,21 @@ describe("stored logs", () => {
     const logs = restoreLogs({ [profile.id]: { meals: [], fluidLog: [], moodLog: [] } }, PROFILES, DAY);
     expect(logs[profile.id].meals).toEqual([]);
     expect(logs[PROFILES[1].id].meals.length).toBeGreaterThan(0);
+  });
+});
+
+describe("water in food", () => {
+  const food = (id: string) => FOODS.find((item) => item.id === id)!;
+  it("adds each logged food's water, scaled by portion", () => {
+    const meals = [
+      makeMealEntry(food("scrambled-eggs"), "breakfast", 1, "", DAY), // 70.1 g
+      makeMealEntry(food("chicken-pineapple-salad"), "lunch", 0.5, "", DAY), // 29.35 g
+      makeMealEntry(food("almonds"), "snack", 1, "", DAY), // 1.21 g
+    ];
+    expect(foodWaterLitres(meals)).toBe(0.101);
+  });
+  it("adds nothing for foods without a water value", () => {
+    expect(foodWaterLitres([makeMealEntry(food("oatmeal"), "breakfast", 1, "", DAY)])).toBe(0);
+    expect(foodWaterLitres([])).toBe(0);
   });
 });
