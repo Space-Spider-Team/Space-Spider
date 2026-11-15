@@ -283,6 +283,11 @@ export type MealEntry = {
   grams: number;
   macros: Macros;
   loggedAt: string;
+  source?: {
+    record: "crew-entered" | "demo-seed" | "migrated";
+    nutrients: "usda-fdc" | "demo-estimate";
+    url?: string;
+  };
 };
 
 /* ------------------------------------------------------------------ */
@@ -553,6 +558,11 @@ export function makeMealEntry(food: Food, category: MealCategory, portions: numb
     grams: Math.round(food.servingGrams * portions),
     macros: scaleMacros(food.macros, portions),
     loggedAt: time,
+    source: {
+      record: "crew-entered",
+      nutrients: food.usda ? "usda-fdc" : "demo-estimate",
+      url: food.usda?.url,
+    },
   };
 }
 
@@ -571,6 +581,11 @@ export function seedEntries(profile: Profile): MealEntry[] {
         grams: Math.round(food.servingGrams * seed.portions),
         macros: scaleMacros(food.macros, seed.portions),
         loggedAt: seed.time,
+        source: {
+          record: "demo-seed",
+          nutrients: food.usda ? "usda-fdc" : "demo-estimate",
+          url: food.usda?.url,
+        },
       },
     ];
   });

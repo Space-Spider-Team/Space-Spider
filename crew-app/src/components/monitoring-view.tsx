@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { useCrew } from "@/components/crew-provider";
+import { NasaDataCatalog } from "@/components/nasa-data-catalog";
 import { HrrChip, SectionLabel, TonePill } from "@/components/ui";
 
-type BpPoint = { day: string; systolic: number; diastolic: number; timestamp: string };
-type SleepPoint = { day: string; duration: number; bedtime: string; wake: string; quality?: number; efficiency?: number };
+type EntrySource = "demo-seed" | "crew-entered";
+type BpPoint = { day: string; systolic: number; diastolic: number; timestamp: string; source?: EntrySource };
+type SleepPoint = { day: string; duration: number; bedtime: string; wake: string; quality?: number; efficiency?: number; source?: EntrySource };
 type ExerciseKind = "ared" | "cycle" | "treadmill" | "other";
 type ExerciseRecord = {
   id: string;
@@ -34,6 +36,7 @@ type ExerciseRecord = {
   volumeLoad?: number;
   peakForce?: number;
   torque?: number;
+  source?: "crew-entered";
 };
 type PrebreatheRecord = {
   protocol: string;
@@ -49,6 +52,7 @@ type PrebreatheRecord = {
   evaStart: string;
   evaEnd: string;
   repressTime: string;
+  source?: EntrySource;
 };
 type MonitoringRecord = {
   bp: BpPoint[];
@@ -56,7 +60,7 @@ type MonitoringRecord = {
   exercise: ExerciseRecord[];
   prebreathe: PrebreatheRecord;
   symptoms: string[];
-  symptomEvents: { symptom: string; timestamp: string }[];
+  symptomEvents: { symptom: string; timestamp: string; source?: EntrySource }[];
 };
 
 const STORAGE_KEY = "sagecare.monitoring.v1";
@@ -83,6 +87,7 @@ const EMPTY_PREBREATHE: PrebreatheRecord = {
   evaStart: "",
   evaEnd: "",
   repressTime: "",
+  source: "demo-seed",
 };
 
 function seededRecord(profile: ReturnType<typeof useCrew>["profile"]): MonitoringRecord {
@@ -96,12 +101,14 @@ function seededRecord(profile: ReturnType<typeof useCrew>["profile"]): Monitorin
       systolic: Math.max(100, systolic + [2, -1, 1, 0, -2, 1, 0][index]),
       diastolic: Math.max(60, diastolic + [1, 0, -1, 2, -1, 1, 0][index]),
       timestamp: `${day} · simulated`,
+      source: "demo-seed",
     })),
     sleep: DAYS.map((day, index) => ({
       day,
       duration: Math.max(4, Math.round((sleepHours + [-0.5, 0.1, -0.2, 0.3, -0.4, 0.2, 0][index]) * 10) / 10),
       bedtime: ["22:40", "22:25", "23:05", "22:35", "23:20", "22:50", "22:30"][index],
       wake: ["06:20", "06:15", "06:35", "06:10", "06:30", "06:25", "06:20"][index],
+      source: "demo-seed",
     })),
     exercise: [],
     prebreathe: EMPTY_PREBREATHE,
@@ -262,6 +269,7 @@ export function MonitoringView() {
   const { profile } = useCrew();
   const [records, setRecords] = useState<Record<string, MonitoringRecord>>({});
   const [storageReady, setStorageReady] = useState(false);
+  const saveQueue = useRef(Promise.resolve());
   const [kind, setKind] = useState<ExerciseKind>("ared");
   const [intensity, setIntensity] = useState("moderate");
   const [duration, setDuration] = useState("30");
@@ -305,16 +313,35 @@ export function MonitoringView() {
   const [repressTime, setRepressTime] = useState("");
 
   useEffect(() => {
-    /* eslint-disable react-hooks/set-state-in-effect -- one-time local-only record hydration */
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) setRecords(JSON.parse(raw) as Record<string, MonitoringRecord>);
-    } catch {
-      // Keep the local simulated defaults if storage is unavailable or invalid.
-    } finally {
+    let cancelled = false;
+    const load = async () => {
+      let saved: Record<string, MonitoringRecord> | null = null;
+      try {
+        const response = await fetch("/api/state", { cache: "no-store" });
+        if (response.ok) {
+          const data = await response.json() as { states?: { monitoring?: Record<string, MonitoringRecord> } };
+          const databaseRows = data.states?.monitoring;
+          if (databaseRows && Object.keys(databaseRows).length) saved = databaseRows;
+        }
+      } catch {
+        // Fall back to browser storage when the server is unavailable.
+      }
+      if (!saved) {
+        try {
+          const raw = window.localStorage.getItem(STORAGE_KEY);
+          if (raw) saved = JSON.parse(raw) as Record<string, MonitoringRecord>;
+        } catch {
+          // Keep the local simulated defaults if browser storage is unavailable or invalid.
+        }
+      }
+      if (cancelled) return;
+      /* eslint-disable react-hooks/set-state-in-effect -- hydrate persistent records once */
+      if (saved) setRecords(saved);
       setStorageReady(true);
-    }
-    /* eslint-enable react-hooks/set-state-in-effect */
+      /* eslint-enable react-hooks/set-state-in-effect */
+    };
+    void load();
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
@@ -324,6 +351,14 @@ export function MonitoringView() {
     } catch {
       // The prototype remains usable in memory when storage is blocked.
     }
+    saveQueue.current = saveQueue.current.catch(() => undefined).then(async () => {
+      const response = await fetch("/api/state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ domain: "monitoring", states: records }),
+      });
+      if (!response.ok) throw new Error("Monitoring data was not saved to the database.");
+    }).catch(() => undefined);
   }, [records, storageReady]);
 
   const record = records[profile.id] ?? seededRecord(profile);
@@ -350,6 +385,7 @@ export function MonitoringView() {
     const s = Number(bpSys), d = Number(bpDia);
     if (!Number.isFinite(s) || !Number.isFinite(d) || s <= 0 || d <= 0) return;
     const next = [...record.bp.slice(-6), { day: "Today", systolic: s, diastolic: d, timestamp: `${new Date().toISOString().slice(11, 16)} UTC · manual` }];
+    next[next.length - 1].source = "crew-entered";
     updateRecord({ bp: next });
     setBpSys(""); setBpDia("");
   };
@@ -358,7 +394,7 @@ export function MonitoringView() {
     event.preventDefault();
     const hours = Number(sleepHours);
     if (!Number.isFinite(hours) || hours <= 0 || !bedtime || !wakeTime) return;
-    const next = [...record.sleep.slice(-6), { day: "Today", duration: hours, bedtime, wake: wakeTime, quality: quality ? Number(quality) : undefined, efficiency: sleepEfficiency ? Number(sleepEfficiency) : undefined }];
+    const next = [...record.sleep.slice(-6), { day: "Today", duration: hours, bedtime, wake: wakeTime, quality: quality ? Number(quality) : undefined, efficiency: sleepEfficiency ? Number(sleepEfficiency) : undefined, source: "crew-entered" as const }];
     updateRecord({ sleep: next });
     setSleepHours(""); setBedtime(""); setWakeTime(""); setQuality(""); setSleepEfficiency("");
   };
@@ -390,6 +426,7 @@ export function MonitoringView() {
       volumeLoad: kind === "ared" && [load, setCount, repCount].every(Number.isFinite) ? load * setCount * repCount : undefined,
       peakForce: peakForce ? Number(peakForce) : undefined,
       torque: torque ? Number(torque) : undefined,
+      source: "crew-entered",
     };
     updateRecord({ exercise: [...record.exercise, row] });
     setSessionNotice(`Saved ${name} · ${row.calories} estimated Earth-based MET calories.`);
@@ -403,6 +440,7 @@ export function MonitoringView() {
       depressuriseStart: depressStart, depressuriseEnd: depressEnd,
       evaStart, evaEnd, repressTime,
     };
+    p.source = "crew-entered";
     updateRecord({ prebreathe: p });
   };
 
@@ -660,7 +698,7 @@ export function MonitoringView() {
                     const timestamp = new Date().toISOString();
                     updateRecord({
                       symptoms: checked ? record.symptoms.filter((item) => item !== symptom) : [...record.symptoms, symptom],
-                      symptomEvents: checked ? (record.symptomEvents ?? []).filter((item) => item.symptom !== symptom) : [...(record.symptomEvents ?? []), { symptom, timestamp }],
+                      symptomEvents: checked ? (record.symptomEvents ?? []).filter((item) => item.symptom !== symptom) : [...(record.symptomEvents ?? []), { symptom, timestamp, source: "crew-entered" }],
                     });
                   }} />{symptom}</label>;
                 })}
@@ -710,6 +748,7 @@ export function MonitoringView() {
               ["NASA Human Research Roadmap · EVA/DCS risk", "https://humanresearchroadmap.nasa.gov/Risks/?i=32"],
             ].map(([label, href]) => <li key={label}><a href={href} target="_blank" rel="noreferrer" className="text-xs font-medium text-sky-300 underline decoration-sky-400/30 underline-offset-2 hover:text-sky-100">{label} ↗</a></li>)}
           </ul>
+          <NasaDataCatalog />
           <Link href="/nutrition" className="mt-4 inline-flex min-h-10 items-center rounded-xl border border-slate-700 px-3 text-xs font-semibold text-slate-200 hover:border-sky-400/40">Nutrition targets and food logging →</Link>
         </section>
       </div>

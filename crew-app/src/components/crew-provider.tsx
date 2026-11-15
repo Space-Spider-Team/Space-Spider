@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   FOODS,
   PROFILES,
@@ -19,8 +19,11 @@ export type MoodEntry = { level: number; date: string };
 type ProfileLog = {
   meals: MealEntry[];
   fluid: number;
+  fluidSource?: "demo-seed" | "crew-entered";
   mood?: MoodEntry;
+  moodSource?: "crew-entered";
   vitaminD?: { date: string; taken: boolean };
+  vitaminDSource?: "crew-entered";
 };
 
 type CrewState = {
@@ -47,7 +50,7 @@ const CrewContext = createContext<CrewState | null>(null);
 
 function defaultLogs(): Record<string, ProfileLog> {
   return Object.fromEntries(
-    PROFILES.map((profile) => [profile.id, { meals: seedEntries(profile), fluid: profile.baseFluid }]),
+    PROFILES.map((profile) => [profile.id, { meals: seedEntries(profile), fluid: profile.baseFluid, fluidSource: "demo-seed" }]),
   );
 }
 
@@ -59,48 +62,79 @@ function nowLabel(): string {
   return `${new Date().toISOString().slice(11, 16)} UTC`;
 }
 
+function restoreLogs(raw: unknown, defaults: Record<string, ProfileLog>): Record<string, ProfileLog> {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return defaults;
+  const parsed = raw as Record<string, unknown>;
+  const next = { ...defaults };
+  for (const profile of PROFILES) {
+    const entry = parsed[profile.id] as ProfileLog | undefined;
+    if (!entry || !Array.isArray(entry.meals) || typeof entry.fluid !== "number") continue;
+    next[profile.id] = {
+      ...entry,
+      meals: entry.meals.map((meal) => {
+        const food = FOODS.find((item) => item.id === meal.foodId);
+        return food ? {
+          ...meal,
+          macros: scaleMacros(food.macros, meal.portions),
+          source: meal.source ?? {
+            record: "migrated" as const,
+            nutrients: food.usda ? "usda-fdc" as const : "demo-estimate" as const,
+            url: food.usda?.url,
+          },
+        } : meal;
+      }),
+    };
+  }
+  return next;
+}
+
 export function CrewProvider({ children }: { children: ReactNode }) {
   const [activeId, setActiveId] = useState(PROFILES[0].id);
   const [logs, setLogs] = useState<Record<string, ProfileLog>>(defaultLogs);
   const [hydrated, setHydrated] = useState(false);
   const [currentDay, setCurrentDay] = useState("");
+  const saveQueue = useRef(Promise.resolve());
 
   useEffect(() => {
-    /* Logs live in localStorage, which is only readable after mount. Loading them
-       once here is intentional, so the hydrate-on-mount setState is allowed. */
-    /* eslint-disable react-hooks/set-state-in-effect */
-    try {
-      const rawLogs = window.localStorage.getItem(STORE_KEY);
-      if (rawLogs) {
-        const parsed = JSON.parse(rawLogs) as Record<string, ProfileLog>;
-        setLogs((prev) => {
-          const next = { ...prev };
-          for (const profile of PROFILES) {
-            const entry = parsed[profile.id];
-            if (entry && Array.isArray(entry.meals) && typeof entry.fluid === "number") {
-              next[profile.id] = {
-                ...entry,
-                meals: entry.meals.map((meal) => {
-                  const food = FOODS.find((item) => item.id === meal.foodId);
-                  return food ? { ...meal, macros: scaleMacros(food.macros, meal.portions) } : meal;
-                }),
-              };
-            }
-          }
-          return next;
-        });
+    let cancelled = false;
+    const defaults = defaultLogs();
+    const load = async () => {
+      let serverStates: Record<string, Record<string, unknown>> | null = null;
+      try {
+        const response = await fetch("/api/state", { cache: "no-store" });
+        if (response.ok) {
+          const data = await response.json() as { states?: Record<string, Record<string, unknown>> };
+          serverStates = data.states ?? null;
+        }
+      } catch {
+        // Keep working from this device if the server is temporarily unavailable.
       }
-      const rawProfile = window.localStorage.getItem(PROFILE_KEY);
-      if (rawProfile && PROFILES.some((profile) => profile.id === rawProfile)) {
-        setActiveId(rawProfile);
+
+      let localLogs: unknown = null;
+      let localProfile = "";
+      try {
+        const rawLogs = window.localStorage.getItem(STORE_KEY);
+        localLogs = rawLogs ? JSON.parse(rawLogs) as unknown : null;
+        localProfile = window.localStorage.getItem(PROFILE_KEY) ?? "";
+      } catch {
+        // Browser storage may be disabled.
       }
-    } catch {
-      /* storage unavailable — keep in-memory defaults */
-    } finally {
+
+      const serverLogs = serverStates?.crew ?? {};
+      const hasServerLogs = Object.keys(serverLogs).length > 0;
+      const restored = restoreLogs(hasServerLogs ? serverLogs : localLogs, defaults);
+      const savedSettings = serverStates?.settings?.__app__ as { activeProfileId?: string } | undefined;
+      const nextProfile = savedSettings?.activeProfileId ?? localProfile;
+      if (cancelled) return;
+      /* eslint-disable react-hooks/set-state-in-effect -- hydrate persistent server/browser state once */
+      setLogs(restored);
+      if (PROFILES.some((profile) => profile.id === nextProfile)) setActiveId(nextProfile);
+      setCurrentDay(todayKey());
       setHydrated(true);
-    }
-    setCurrentDay(todayKey());
-    /* eslint-enable react-hooks/set-state-in-effect */
+      /* eslint-enable react-hooks/set-state-in-effect */
+    };
+    void load();
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
@@ -111,6 +145,22 @@ export function CrewProvider({ children }: { children: ReactNode }) {
     } catch {
       /* ignore quota / privacy errors */
     }
+
+    const save = async () => {
+      const logResponse = await fetch("/api/state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ domain: "crew", states: logs }),
+      });
+      if (!logResponse.ok) throw new Error("Crew data was not saved to the database.");
+      const settingsResponse = await fetch("/api/state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ domain: "settings", states: { __app__: { activeProfileId: activeId } } }),
+      });
+      if (!settingsResponse.ok) throw new Error("Profile selection was not saved.");
+    };
+    saveQueue.current = saveQueue.current.catch(() => undefined).then(save).catch(() => undefined);
   }, [logs, activeId, hydrated]);
 
   const profile = useMemo(
@@ -155,7 +205,7 @@ export function CrewProvider({ children }: { children: ReactNode }) {
       setLogs((prev) => {
         const current = prev[profile.id];
         const next = Math.max(0, Math.round((current.fluid + ml / 1000) * 100) / 100);
-        return { ...prev, [profile.id]: { ...current, fluid: next } };
+        return { ...prev, [profile.id]: { ...current, fluid: next, fluidSource: "crew-entered" } };
       });
     },
     [profile.id],
@@ -170,6 +220,7 @@ export function CrewProvider({ children }: { children: ReactNode }) {
           ...prev,
           [profile.id]: {
             ...current,
+            moodSource: "crew-entered",
             mood: current.mood && current.mood.date === nextMood.date ? { ...nextMood } : nextMood,
           },
         };
@@ -184,6 +235,7 @@ export function CrewProvider({ children }: { children: ReactNode }) {
       [profile.id]: {
         ...prev[profile.id],
         vitaminD: { date: todayKey(), taken: true },
+        vitaminDSource: "crew-entered",
       },
     }));
   }, [profile.id]);

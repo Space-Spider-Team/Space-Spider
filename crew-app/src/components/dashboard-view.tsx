@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { useCrew } from "@/components/crew-provider";
 import { HrrChip, HrrList, Meter, RangeMeter, SectionLabel, TonePill, toneText } from "@/components/ui";
 import { macroCap, pct, type HrrKey, type Range, type Tone } from "@/lib/crew";
@@ -17,9 +18,6 @@ const procedureRefs = [
   "Hydration procedure: log fluid source, volume, and time if intake is below the ship target.",
   "Sleep review: if total sleep drops below 6 hours for 3 days, initiate baseline review with base station.",
 ];
-
-const trendPath = "M8 78 C 42 68, 68 73, 98 58 S 160 45, 194 50 S 246 26, 290 38 S 344 12, 382 18";
-const fillTrend = "M8 78 C 42 68, 68 73, 98 58 S 160 45, 194 50 S 246 26, 290 38 S 344 12, 382 18 L382 116 L8 116 Z";
 
 const ALERT_BOX: Record<Tone, { box: string; bar: string; title: string }> = {
   amber: { box: "border-amber-400/20 bg-amber-500/[0.07]", bar: "bg-amber-400", title: "text-amber-100" },
@@ -41,8 +39,26 @@ const SYSTEM_POSITIONS = [
 
 export function DashboardView() {
   const { profile, totals, fluid } = useCrew();
+  const [trendRange, setTrendRange] = useState<"week" | "month">("week");
 
   const hr = profile.metrics.find((metric) => metric.label === "Resting HR") ?? profile.metrics[0];
+  const currentHr = Number.parseFloat(hr.value) || 70;
+  const trendCount = trendRange === "week" ? 7 : 30;
+  const trendValues = Array.from({ length: trendCount }, (_, index) => {
+    if (index === trendCount - 1) return currentHr;
+    const wave = trendRange === "week"
+      ? Math.sin(index * 1.18) * 3 + Math.cos(index * 0.57) * 1.6
+      : Math.sin(index * 0.34) * 3 + Math.sin(index * 1.18) * 1.4;
+    return Math.round(currentHr + wave + Math.sin(index * 2.13) * 1.2);
+  });
+  const trendPoints = trendValues.map((value, index) => {
+    const x = 8 + (index / Math.max(1, trendValues.length - 1)) * 374;
+    const y = 95 - ((value - 55) / 45) * 77;
+    return `${x},${y}`;
+  });
+  const trendPath = `M${trendPoints.join(" L")}`;
+  const lastPoint = trendPoints[trendPoints.length - 1].split(",");
+  const fillTrend = `${trendPath} L382 116 L8 116 Z`;
   const fluidPercent = pct(fluid, profile.targets.fluid);
   const remaining = Math.max(0, profile.targets.fluid - fluid);
 
@@ -89,7 +105,7 @@ export function DashboardView() {
   return (
     <main className="px-4 py-5 sm:px-6 lg:px-10 lg:py-8">
       <div className="mx-auto max-w-7xl">
-        <nav aria-label="Dashboard sections" className="sticky top-24 z-20 mb-5 flex gap-2 overflow-x-auto rounded-2xl border border-slate-800/80 bg-[#070d18]/95 p-2 backdrop-blur-lg">
+        <nav aria-label="Dashboard sections" className="mb-5 flex gap-2 overflow-x-auto rounded-2xl border border-slate-800/80 bg-[#070d18]/95 p-2">
           {[
             ["health-overview", "Health status"],
             ["mission-alerts", "Alerts"],
@@ -140,7 +156,7 @@ export function DashboardView() {
                 <SectionLabel>Current health</SectionLabel>
                 <h2 className="mt-1.5 text-xl font-semibold tracking-tight text-white">Vitals at a glance</h2>
               </div>
-              <p className="text-xs text-slate-500">Latest recorded measurements</p>
+              <p className="text-xs text-slate-500">Sample profile data · not live telemetry</p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               {profile.metrics.map((metric) => (
@@ -246,10 +262,20 @@ export function DashboardView() {
               <div>
                 <SectionLabel>History and trend</SectionLabel>
                 <h2 className="mt-1.5 text-2xl font-semibold tracking-tight text-white">Measurement review</h2>
+                <p className="mt-1 text-xs text-slate-400">Illustrative sample trend · not live telemetry</p>
               </div>
-              <div className="flex items-center gap-2 text-xs font-medium text-slate-300">
-                <span aria-hidden className="h-2 w-2 rounded-full bg-sky-400" /> Baseline
-                <span aria-hidden className="ml-3 h-2 w-2 rounded-full bg-emerald-400" /> Current
+              <div className="flex flex-wrap items-center gap-2">
+                <div role="group" aria-label="Trend time range" className="flex rounded-xl border border-slate-700 bg-slate-950/70 p-1">
+                  {(["week", "month"] as const).map((range) => (
+                    <button key={range} type="button" aria-pressed={trendRange === range} onClick={() => setTrendRange(range)} className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${trendRange === range ? "bg-sky-500/20 text-sky-100" : "text-slate-300 hover:bg-slate-800"}`}>
+                      {range === "week" ? "Weekly" : "Monthly"}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2 text-xs font-medium text-slate-300">
+                  <span aria-hidden className="h-2 w-2 rounded-full bg-sky-400" /> Trend
+                  <span aria-hidden className="ml-2 h-2 w-2 rounded-full bg-emerald-400" /> Current
+                </div>
               </div>
             </div>
 
@@ -257,7 +283,7 @@ export function DashboardView() {
               <svg
                 viewBox="0 0 390 130"
                 role="img"
-                aria-label="Heart-rate history chart"
+                aria-label={`Illustrative heart-rate trend for the ${trendRange === "week" ? "last 7 days" : "last 30 days"}`}
                 preserveAspectRatio="none"
                 className="h-48 w-full"
               >
@@ -286,9 +312,11 @@ export function DashboardView() {
                 ))}
 
                 <path d={fillTrend} fill="url(#timeFill)" />
-                <path d={trendPath} fill="none" stroke="url(#lineChart)" strokeWidth="2.6" strokeLinecap="round" />
-                <circle cx="382" cy="18" r="7" fill="rgba(52,211,153,0.18)" />
-                <circle cx="382" cy="18" r="3.2" fill="#34d399" stroke="#05080f" strokeWidth="1.4" />
+                <path d={trendPath} fill="none" stroke="url(#lineChart)" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx={lastPoint[0]} cy={lastPoint[1]} r="7" fill="rgba(52,211,153,0.18)" />
+                <circle cx={lastPoint[0]} cy={lastPoint[1]} r="3.2" fill="#34d399" stroke="#05080f" strokeWidth="1.4" />
+                <text x="8" y="128" fill="#94a3b8" fontSize="9">{trendRange === "week" ? "7 days ago" : "30 days ago"}</text>
+                <text x="382" y="128" fill="#94a3b8" fontSize="9" textAnchor="end">Today</text>
               </svg>
             </div>
 
@@ -298,7 +326,7 @@ export function DashboardView() {
                 <p className={`mt-1.5 text-base font-semibold tracking-tight ${toneText(hr.tone)}`}>
                   {hr.tone === "alert" ? "Needs review" : hr.tone === "watch" ? "Slightly elevated" : "Relatively stable"}
                 </p>
-                <p className="text-xs text-slate-400">14-day window • MBK test</p>
+                <p className="text-xs text-slate-400">{trendRange === "week" ? "7-day" : "30-day"} window | sample trend</p>
               </div>
 
               <div className="tile rounded-2xl p-3.5">

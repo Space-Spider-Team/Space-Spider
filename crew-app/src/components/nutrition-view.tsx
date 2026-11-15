@@ -307,6 +307,9 @@ export function NutritionView() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full border border-amber-400/25 bg-amber-500/10 px-3 py-1.5 text-sm font-medium text-amber-200">
+                Sample profile
+              </span>
               <span className="rounded-full border border-slate-700/80 bg-slate-900/70 px-3 py-1.5 text-sm text-slate-300">
                 {meals.length} items logged
               </span>
@@ -347,7 +350,7 @@ export function NutritionView() {
           ) : null}
         </section>
 
-        <nav aria-label="Nutrition sections" className="sticky top-24 z-20 -mx-1 flex gap-2 overflow-x-auto rounded-2xl border border-slate-800/80 bg-[#070d18]/95 p-2 backdrop-blur-lg sm:mx-0">
+        <nav aria-label="Nutrition sections" className="-mx-1 flex gap-2 overflow-x-auto rounded-2xl border border-slate-800/80 bg-[#070d18]/95 p-2 backdrop-blur-lg sm:mx-0">
           {[
             ["food-log", "Add food"],
             ["daily-targets", "Daily targets"],
@@ -598,6 +601,12 @@ export function NutritionView() {
                               <p className="truncate text-[13px] font-medium text-slate-100">{entry.name}</p>
                               <p className="text-[10px] text-slate-500 tabular-nums">
                                 {entry.portions}× · {entry.grams} g · {entry.loggedAt}
+                              </p>
+                              <p className="text-[10px] text-slate-500">
+                                {entry.source?.record === "crew-entered" ? "Crew entry" : entry.source?.record === "migrated" ? "Restored entry" : "Sample entry"}
+                                {entry.source?.nutrients === "usda-fdc" && entry.source.url ? (
+                                  <> · <a href={entry.source.url} target="_blank" rel="noreferrer" className="underline underline-offset-2">USDA FoodData Central</a></>
+                                ) : " · Demo nutrient estimate"}
                               </p>
                             </div>
                             <span className="shrink-0 text-xs font-semibold text-slate-300 tabular-nums">

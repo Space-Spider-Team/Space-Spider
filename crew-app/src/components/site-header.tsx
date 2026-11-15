@@ -25,7 +25,13 @@ export function SiteHeader() {
       setUtcTime(new Intl.DateTimeFormat("en-GB", {
         timeZone: "UTC", hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23",
       }).format(now));
-      const phase = utcHour >= 6 && utcHour < 18 ? "day" : "night";
+      const phase = utcHour >= 5 && utcHour < 10
+        ? "morning"
+        : utcHour >= 10 && utcHour < 16
+          ? "afternoon"
+          : utcHour >= 16 && utcHour < 20
+            ? "evening"
+            : "night";
       setTimePhase(phase);
       document.documentElement.dataset.theme = phase;
       document.documentElement.dataset.timePhase = phase;
@@ -37,7 +43,7 @@ export function SiteHeader() {
 
   return (
     <div className="px-4 pt-3 sm:px-6 lg:px-10">
-      <header className="panel sticky top-3 z-30 mx-auto flex max-w-7xl flex-col gap-3 rounded-3xl bg-slate-950/85 px-4 py-3 backdrop-blur-xl lg:flex-row lg:items-center lg:justify-between">
+      <header className="panel mx-auto flex max-w-7xl flex-col gap-3 rounded-3xl bg-slate-950/85 px-4 py-3 backdrop-blur-xl lg:flex-row lg:items-center lg:justify-between">
         <Link href="/" className="flex items-center gap-3 rounded-2xl">
           <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-cyan-600 text-lg font-black text-slate-950 shadow-lg shadow-sky-500/20 ring-1 ring-white/20">
             S

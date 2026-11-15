@@ -1,4 +1,15 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+SageCare is a Next.js crew health prototype. Crew logs and monitoring entries are stored in SQLite on the app server. NASA OSDR study metadata can be searched from Monitoring and is cached in the same database.
+
+## Requirements
+
+- Node.js 22.13 or later (`node:sqlite`)
+- npm
+
+The database defaults to `data/sagecare.sqlite`. Set `SAGECARE_DB_PATH` to move it. SQLite files are excluded from git.
+
+Existing browser logs are imported the first time the server database is empty. Browser storage remains as a local fallback if the API is unavailable.
+
+NASA OSDR search returns study metadata only. Human research files may have controlled access; this app does not import private astronaut medical records. Profile and sensor readings remain simulated unless entered by a crew member. Do not expose this unauthenticated prototype to a public network or store real patient data in it.
 
 ## Getting Started
 
@@ -17,8 +28,6 @@ bun dev
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Learn More
 

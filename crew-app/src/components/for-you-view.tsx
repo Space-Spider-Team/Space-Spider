@@ -46,6 +46,9 @@ export function ForYouView() {
               <span className="profile-role rounded-full px-3 py-1.5">
                 {profile.role}
               </span>
+              <span className="rounded-full border border-amber-400/25 bg-amber-500/10 px-3 py-1.5 text-sm font-medium text-amber-200">
+                Sample profile
+              </span>
               <span className="rounded-full border border-slate-700/80 bg-slate-900/70 px-3 py-1.5 text-slate-300 tabular-nums">
                 {profile.sex} · {profile.age} y · {profile.heightCm} cm · {profile.weightKg} kg
               </span>

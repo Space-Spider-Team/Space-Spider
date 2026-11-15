@@ -19,7 +19,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <SiteHeader />
           <div className="flex-1">{children}</div>
           <footer className="mx-auto w-full max-w-7xl px-4 pb-6 pt-2 text-center text-xs text-slate-500 sm:px-6 lg:px-10">
-            SageCare · Crew health overview · Demo data is stored on this device
+            SageCare · Crew health overview · Sample profiles; records saved on this server
           </footer>
         </CrewProvider>
       </body>

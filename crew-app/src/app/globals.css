@@ -109,7 +109,7 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-html[data-theme="day"] {
+html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) {
   color-scheme: light;
   --background: #cbd7dd;
   --foreground: #172935;
@@ -160,7 +160,7 @@ html[data-theme="day"] {
   background: var(--background);
 }
 
-html[data-theme="day"] body {
+html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) body {
   color: var(--foreground);
   background:
     radial-gradient(46rem 26rem at 8% -14%, rgba(91, 140, 155, 0.12), transparent 62%),
@@ -168,48 +168,48 @@ html[data-theme="day"] body {
     linear-gradient(180deg, #d4dfe4 0%, #cbd7dd 58%, #c1cfd6 100%);
 }
 
-html[data-theme="day"] body::before {
+html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) body::before {
   background-image: radial-gradient(rgba(71, 112, 139, 0.08) 1px, transparent 1px);
 }
 
-html[data-theme="day"] .panel { background-color: var(--surface); border-color: var(--border); box-shadow: 0 14px 36px -28px rgba(28, 55, 75, 0.3); }
-html[data-theme="day"] .tile { background-color: var(--surface-2); border-color: var(--border); }
-html[data-theme="day"] :where([class*="text-white"], [class*="text-slate-100"], [class*="text-slate-200"]) { color: var(--foreground) !important; }
-html[data-theme="day"] :where([class*="text-slate-300"], [class*="text-slate-400"]) { color: var(--text-body) !important; }
-html[data-theme="day"] :where([class*="text-slate-500"], [class*="text-slate-600"]) { color: var(--text-muted) !important; }
-html[data-theme="day"] :where([class*="bg-slate-950"], [class*="bg-slate-900"]) { background-color: var(--surface-control) !important; }
-html[data-theme="day"] :where([class*="bg-slate-800"]) { background-color: #b3c4cc !important; }
-html[data-theme="day"] :where([class*="bg-slate-700"]) { background-color: #acbdc5 !important; }
-html[data-theme="day"] :where([class*="border-slate-800"], [class*="border-slate-700"], [class*="border-slate-600"]) { border-color: var(--border) !important; }
-html[data-theme="day"] :where([class*="border-sky-"], [class*="border-cyan-"]) { border-color: var(--border-accent) !important; }
-html[data-theme="day"] :where([class*="border-emerald-"], [class*="border-amber-"], [class*="border-rose-"]) { border-color: var(--border-status) !important; }
-html[data-theme="day"] .fixed.bg-slate-950\/80 { background-color: rgba(9, 18, 28, 0.84) !important; }
-html[data-theme="day"] [class*="bg-[#"] { background-color: var(--surface) !important; }
-html[data-theme="day"] [class*="placeholder:text-slate-500"]::placeholder { color: #3e5663 !important; opacity: 1; }
-html[data-theme="day"] .panel svg text { fill: #314955 !important; }
-html[data-theme="day"] .panel svg polyline,
-html[data-theme="day"] .panel svg circle { filter: brightness(0.72) saturate(0.82); }
-html[data-theme="day"] :where([class*="hover:text-white"]:hover) { color: #10283e !important; }
-html[data-theme="day"] :where([class*="hover:bg-slate-800"]:hover, [class*="hover:bg-slate-900"]:hover) { background-color: #a9bdc6 !important; }
-html[data-theme="day"] :where([class*="text-sky-"], [class*="text-cyan-"], [class*="text-teal-"]) { color: var(--text-accent) !important; }
+html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) .panel { background-color: var(--surface); border-color: var(--border); box-shadow: 0 14px 36px -28px rgba(28, 55, 75, 0.3); }
+html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) .tile { background-color: var(--surface-2); border-color: var(--border); }
+html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) :where([class*="text-white"], [class*="text-slate-100"], [class*="text-slate-200"]) { color: var(--foreground) !important; }
+html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) :where([class*="text-slate-300"], [class*="text-slate-400"]) { color: var(--text-body) !important; }
+html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) :where([class*="text-slate-500"], [class*="text-slate-600"]) { color: var(--text-muted) !important; }
+html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) :where([class*="bg-slate-950"], [class*="bg-slate-900"]) { background-color: var(--surface-control) !important; }
+html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) :where([class*="bg-slate-800"]) { background-color: #b3c4cc !important; }
+html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) :where([class*="bg-slate-700"]) { background-color: #acbdc5 !important; }
+html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) :where([class*="border-slate-800"], [class*="border-slate-700"], [class*="border-slate-600"]) { border-color: var(--border) !important; }
+html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) :where([class*="border-sky-"], [class*="border-cyan-"]) { border-color: var(--border-accent) !important; }
+html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) :where([class*="border-emerald-"], [class*="border-amber-"], [class*="border-rose-"]) { border-color: var(--border-status) !important; }
+html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) .fixed.bg-slate-950\/80 { background-color: rgba(9, 18, 28, 0.84) !important; }
+html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) [class*="bg-[#"] { background-color: var(--surface) !important; }
+html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) [class*="placeholder:text-slate-500"]::placeholder { color: #3e5663 !important; opacity: 1; }
+html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) .panel svg text { fill: #314955 !important; }
+html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) .panel svg polyline,
+html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) .panel svg circle { filter: brightness(0.72) saturate(0.82); }
+html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) :where([class*="hover:text-white"]:hover) { color: #10283e !important; }
+html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) :where([class*="hover:bg-slate-800"]:hover, [class*="hover:bg-slate-900"]:hover) { background-color: #a9bdc6 !important; }
+html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) :where([class*="text-sky-"], [class*="text-cyan-"], [class*="text-teal-"]) { color: var(--text-accent) !important; }
 
 /* Reduce high-saturation accents throughout the interface while keeping status colors distinct. */
-html:not([data-theme="day"]) :where([class*="text-white"], [class*="text-slate-100"], [class*="text-slate-200"]) { color: var(--foreground) !important; }
-html:not([data-theme="day"]) :where([class*="text-slate-300"], [class*="text-slate-400"]) { color: var(--text-body) !important; }
-html:not([data-theme="day"]) :where([class*="text-sky-"], [class*="text-cyan-"], [class*="text-teal-"]) { color: var(--text-accent) !important; }
-html:not([data-theme="day"]) :where([class*="text-slate-500"], [class*="text-slate-600"]) { color: var(--text-muted) !important; }
-html:not([data-theme="day"]) [class*="placeholder:text-slate-500"]::placeholder { color: var(--text-muted) !important; opacity: 1; }
-html:not([data-theme="day"]) :where([class*="text-emerald-"], [class*="text-green-"]) { color: var(--text-good) !important; }
-html:not([data-theme="day"]) :where([class*="text-amber-"], [class*="text-orange-"]) { color: var(--text-watch) !important; }
-html:not([data-theme="day"]) :where([class*="text-rose-"], [class*="text-red-"]) { color: var(--text-alert) !important; }
-html:not([data-theme="day"]) :where([class*="text-violet-"], [class*="text-purple-"], [class*="text-indigo-"]) { color: var(--text-info) !important; }
-html:not([data-theme="day"]) :where([class*="border-sky-"], [class*="border-cyan-"]) { border-color: var(--border-accent) !important; }
-html:not([data-theme="day"]) :where([class*="border-emerald-"], [class*="border-amber-"], [class*="border-rose-"], [class*="border-violet-"]) { border-color: var(--border-status) !important; }
+html:is([data-theme="evening"], [data-theme="night"]) :where([class*="text-white"], [class*="text-slate-100"], [class*="text-slate-200"]) { color: var(--foreground) !important; }
+html:is([data-theme="evening"], [data-theme="night"]) :where([class*="text-slate-300"], [class*="text-slate-400"]) { color: var(--text-body) !important; }
+html:is([data-theme="evening"], [data-theme="night"]) :where([class*="text-sky-"], [class*="text-cyan-"], [class*="text-teal-"]) { color: var(--text-accent) !important; }
+html:is([data-theme="evening"], [data-theme="night"]) :where([class*="text-slate-500"], [class*="text-slate-600"]) { color: var(--text-muted) !important; }
+html:is([data-theme="evening"], [data-theme="night"]) [class*="placeholder:text-slate-500"]::placeholder { color: var(--text-muted) !important; opacity: 1; }
+html:is([data-theme="evening"], [data-theme="night"]) :where([class*="text-emerald-"], [class*="text-green-"]) { color: var(--text-good) !important; }
+html:is([data-theme="evening"], [data-theme="night"]) :where([class*="text-amber-"], [class*="text-orange-"]) { color: var(--text-watch) !important; }
+html:is([data-theme="evening"], [data-theme="night"]) :where([class*="text-rose-"], [class*="text-red-"]) { color: var(--text-alert) !important; }
+html:is([data-theme="evening"], [data-theme="night"]) :where([class*="text-violet-"], [class*="text-purple-"], [class*="text-indigo-"]) { color: var(--text-info) !important; }
+html:is([data-theme="evening"], [data-theme="night"]) :where([class*="border-sky-"], [class*="border-cyan-"]) { border-color: var(--border-accent) !important; }
+html:is([data-theme="evening"], [data-theme="night"]) :where([class*="border-emerald-"], [class*="border-amber-"], [class*="border-rose-"], [class*="border-violet-"]) { border-color: var(--border-status) !important; }
 
-html[data-theme="day"] :where([class*="text-emerald-"], [class*="text-green-"]) { color: var(--text-good) !important; }
-html[data-theme="day"] :where([class*="text-amber-"], [class*="text-orange-"]) { color: var(--text-watch) !important; }
-html[data-theme="day"] :where([class*="text-rose-"], [class*="text-red-"]) { color: var(--text-alert) !important; }
-html[data-theme="day"] :where([class*="text-violet-"], [class*="text-purple-"], [class*="text-indigo-"]) { color: var(--text-info) !important; }
+html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) :where([class*="text-emerald-"], [class*="text-green-"]) { color: var(--text-good) !important; }
+html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) :where([class*="text-amber-"], [class*="text-orange-"]) { color: var(--text-watch) !important; }
+html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) :where([class*="text-rose-"], [class*="text-red-"]) { color: var(--text-alert) !important; }
+html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) :where([class*="text-violet-"], [class*="text-purple-"], [class*="text-indigo-"]) { color: var(--text-info) !important; }
 
 /* Keep dense labels readable and give the key hierarchy more breathing room. */
 :where([class~="text-[9px]"]) { font-size: 0.6875rem !important; line-height: 1.4 !important; }
@@ -233,8 +233,8 @@ main.nutrition-page button { min-height: 2.75rem; }
 main.nutrition-page input:not([type="checkbox"]) { min-height: 2.75rem; font-size: 1rem; }
 main.nutrition-page input,
 main.nutrition-page select { color: #d6e0e8; }
-html[data-theme="day"] main.nutrition-page input,
-html[data-theme="day"] main.nutrition-page select { color: #172935; }
+html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) main.nutrition-page input,
+html:is([data-theme="day"], [data-theme="morning"], [data-theme="afternoon"]) main.nutrition-page select { color: #172935; }
 .nutrition-requirements { padding: 1.5rem; }
 .nutrition-requirements input,
 .nutrition-requirements select { min-height: 2.75rem; font-size: 1rem; }
@@ -251,7 +251,7 @@ body::before {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background-image: radial-gradient(rgba(157, 181, 195, 0.055) 1px, transparent 1px);
+  background-image: radial-gradient(color-mix(in srgb, var(--text-accent) 18%, transparent) 1px, transparent 1px);
   background-size: 22px 22px;
   -webkit-mask-image: radial-gradient(140% 90% at 50% 0%, #000 0%, transparent 72%);
   mask-image: radial-gradient(140% 90% at 50% 0%, #000 0%, transparent 72%);
@@ -262,8 +262,8 @@ body::before {
 }
 
 ::selection {
-  background: rgba(121, 164, 174, 0.32);
-  color: #f8fafc;
+  background: color-mix(in srgb, var(--border-accent) 32%, transparent);
+  color: var(--foreground);
 }
 
 ::-webkit-scrollbar {
@@ -276,17 +276,17 @@ body::before {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: var(--surface-control);
   border: 2px solid var(--background);
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: var(--border);
 }
 
 :where(button, a, input, select, textarea, [tabindex]):focus-visible {
-  outline: 2px solid rgba(121, 164, 174, 0.9);
+  outline: 2px solid var(--border-accent);
   outline-offset: 2px;
 }
 
@@ -389,3 +389,203 @@ button:disabled {
     animation-duration: 0.01ms !important;
   }
 }
+
+/* Mission clock palettes: morning sage, warm afternoon brown, evening umber, and night navy. */
+html[data-theme="morning"] {
+  color-scheme: light;
+  --background: #d7ded4;
+  --foreground: #1d2c25;
+  --surface: #e4e8de;
+  --surface-2: #d4ddd2;
+  --surface-control: #c4d0c3;
+  --border: #94a395;
+  --border-accent: #5c7865;
+  --border-status: #879588;
+  --text-body: #304239;
+  --text-muted: #4c5c51;
+  --text-accent: #315b52;
+  --text-good: #31583d;
+  --text-watch: #70541c;
+  --text-alert: #783e47;
+  --text-info: #504969;
+  --palette-sky-100: #e3e9df;
+  --palette-sky-200: #c8d8ca;
+  --palette-sky-300: #a9c4b1;
+  --palette-sky-400: #779b83;
+  --palette-sky-500: #567c64;
+  --palette-sky-600: #3e614c;
+  --palette-cyan-300: #9bbcaf;
+  --palette-cyan-400: #729b88;
+  --palette-cyan-500: #507966;
+  --palette-emerald-300: #a3c1a7;
+  --palette-emerald-400: #73977b;
+  --palette-emerald-500: #547b5e;
+  --palette-amber-300: #c9b67d;
+  --palette-amber-400: #a48b52;
+  --palette-amber-500: #816a3e;
+  --palette-rose-300: #cb9ca1;
+  --palette-rose-400: #a9747a;
+  --palette-rose-500: #864f59;
+  --palette-violet-300: #b2a7c2;
+  --palette-violet-400: #8e82a4;
+  --palette-violet-700: #5b526e;
+  --palette-orange-300: #c4a27c;
+  --palette-orange-400: #a37e57;
+  --palette-orange-500: #815e3e;
+  --palette-teal-300: #9bbcaf;
+  --palette-teal-500: #5d8878;
+  --palette-teal-700: #3e665a;
+  --palette-indigo-300: #a5a7bf;
+  --palette-indigo-500: #777b98;
+  --palette-indigo-600: #5d617e;
+}
+
+html[data-theme="morning"] body {
+  background:
+    radial-gradient(46rem 26rem at 8% -14%, rgba(125, 148, 115, 0.15), transparent 62%),
+    radial-gradient(44rem 26rem at 96% -6%, rgba(177, 151, 108, 0.12), transparent 60%),
+    linear-gradient(180deg, #e0e5d8 0%, #d7ded4 58%, #cbd5ca 100%);
+}
+
+html[data-theme="afternoon"] {
+  color-scheme: light;
+  --background: #cdb793;
+  --foreground: #302416;
+  --surface: #dfcba9;
+  --surface-2: #d2bd99;
+  --surface-control: #c2a982;
+  --border: #907c5e;
+  --border-accent: #795f3b;
+  --border-status: #867252;
+  --text-body: #3b2e1f;
+  --text-muted: #564732;
+  --text-accent: #563f24;
+  --text-good: #315237;
+  --text-watch: #674816;
+  --text-alert: #743941;
+  --text-info: #514053;
+  --palette-sky-100: #e7dac2;
+  --palette-sky-200: #d2bd98;
+  --palette-sky-300: #b99d70;
+  --palette-sky-400: #94734b;
+  --palette-sky-500: #765833;
+  --palette-sky-600: #5e4528;
+  --palette-cyan-300: #c5ad84;
+  --palette-cyan-400: #9c8057;
+  --palette-cyan-500: #7c6240;
+  --palette-emerald-300: #aec09c;
+  --palette-emerald-400: #789263;
+  --palette-emerald-500: #5a7448;
+  --palette-amber-300: #d3b36f;
+  --palette-amber-400: #a8843f;
+  --palette-amber-500: #84652f;
+  --palette-rose-300: #d2a19b;
+  --palette-rose-400: #aa7771;
+  --palette-rose-500: #895953;
+  --palette-violet-300: #bba8b9;
+  --palette-violet-400: #958096;
+  --palette-violet-700: #615060;
+  --palette-orange-300: #d0a77c;
+  --palette-orange-400: #ac8158;
+  --palette-orange-500: #896342;
+  --palette-teal-300: #b5b49a;
+  --palette-teal-500: #858366;
+  --palette-teal-700: #626249;
+  --palette-indigo-300: #aaa5b2;
+  --palette-indigo-500: #7f788b;
+  --palette-indigo-600: #665f72;
+}
+
+html[data-theme="afternoon"] body {
+  background:
+    radial-gradient(46rem 26rem at 8% -14%, rgba(160, 117, 66, 0.18), transparent 62%),
+    radial-gradient(44rem 26rem at 96% -6%, rgba(129, 106, 68, 0.13), transparent 60%),
+    linear-gradient(180deg, #d7c39f 0%, #cdb793 58%, #c2aa83 100%);
+}
+
+html[data-theme="evening"] {
+  color-scheme: dark;
+  --background: #29231d;
+  --foreground: #f2e8d8;
+  --surface: #342b22;
+  --surface-2: #403528;
+  --surface-control: #4a3d2d;
+  --border: #75634c;
+  --border-accent: #9b8057;
+  --border-status: #76634a;
+  --text-body: #d8c7ad;
+  --text-muted: #bca98e;
+  --text-accent: #e0c28e;
+  --text-good: #b6d0ad;
+  --text-watch: #e4c481;
+  --text-alert: #e5aaa6;
+  --text-info: #c8b9d8;
+  --palette-sky-100: #eee2cc;
+  --palette-sky-200: #d8c49f;
+  --palette-sky-300: #c1a879;
+  --palette-sky-400: #a28758;
+  --palette-sky-500: #856b43;
+  --palette-sky-600: #6d5739;
+  --palette-cyan-300: #c5b490;
+  --palette-cyan-400: #a2916e;
+  --palette-cyan-500: #827655;
+  --palette-emerald-300: #adc29f;
+  --palette-emerald-400: #89a17a;
+  --palette-emerald-500: #6b845e;
+  --palette-amber-300: #d4bb82;
+  --palette-amber-400: #b09561;
+  --palette-amber-500: #907548;
+  --palette-rose-300: #d5a7a5;
+  --palette-rose-400: #b18180;
+  --palette-rose-500: #936665;
+  --palette-violet-300: #c0b4cf;
+  --palette-violet-400: #9f93b1;
+  --palette-violet-700: #686079;
+  --palette-orange-300: #d2ae8b;
+  --palette-orange-400: #b38d68;
+  --palette-orange-500: #927150;
+  --palette-teal-300: #b3c1ad;
+  --palette-teal-500: #8b9b83;
+  --palette-teal-700: #67775f;
+  --palette-indigo-300: #b1b1c7;
+  --palette-indigo-500: #8b8da8;
+  --palette-indigo-600: #71738e;
+}
+
+html[data-theme="evening"] body {
+  background:
+    radial-gradient(46rem 26rem at 8% -14%, rgba(141, 101, 57, 0.16), transparent 62%),
+    radial-gradient(44rem 26rem at 96% -6%, rgba(112, 91, 62, 0.12), transparent 60%),
+    linear-gradient(180deg, #30271f 0%, #29231d 58%, #211d19 100%);
+}
+
+html[data-theme="night"] { color-scheme: dark; }
+
+html:is([data-theme="morning"], [data-theme="afternoon"]) body { color: var(--foreground); }
+html:is([data-theme="morning"], [data-theme="afternoon"]) .panel { background-color: var(--surface); border-color: var(--border); }
+html:is([data-theme="morning"], [data-theme="afternoon"]) .tile { background-color: var(--surface-2); border-color: var(--border); }
+html:is([data-theme="morning"], [data-theme="afternoon"]) :where([class*="text-white"], [class*="text-slate-100"], [class*="text-slate-200"]) { color: var(--foreground) !important; }
+html:is([data-theme="morning"], [data-theme="afternoon"]) :where([class*="text-slate-300"], [class*="text-slate-400"]) { color: var(--text-body) !important; }
+html:is([data-theme="morning"], [data-theme="afternoon"]) :where([class*="text-slate-500"], [class*="text-slate-600"]) { color: var(--text-muted) !important; }
+html:is([data-theme="morning"], [data-theme="afternoon"]) :where([class*="bg-slate-950"], [class*="bg-slate-900"]) { background-color: var(--surface-control) !important; }
+html:is([data-theme="morning"], [data-theme="afternoon"]) :where([class*="bg-slate-800"]) { background-color: var(--surface-2) !important; }
+html:is([data-theme="morning"], [data-theme="afternoon"]) :where([class*="bg-slate-700"]) { background-color: var(--surface-control) !important; }
+html:is([data-theme="morning"], [data-theme="afternoon"]) :where([class*="border-slate-800"], [class*="border-slate-700"], [class*="border-slate-600"]) { border-color: var(--border) !important; }
+html:is([data-theme="morning"], [data-theme="afternoon"]) :where([class*="border-sky-"], [class*="border-cyan-"]) { border-color: var(--border-accent) !important; }
+html:is([data-theme="morning"], [data-theme="afternoon"]) :where([class*="border-emerald-"], [class*="border-amber-"], [class*="border-rose-"]) { border-color: var(--border-status) !important; }
+html:is([data-theme="morning"], [data-theme="afternoon"]) [class*="bg-[#"] { background-color: var(--surface) !important; }
+html:is([data-theme="morning"], [data-theme="afternoon"]) .panel svg text { fill: var(--text-body) !important; }
+html:is([data-theme="morning"], [data-theme="afternoon"]) :where([class*="text-sky-"], [class*="text-cyan-"], [class*="text-teal-"]) { color: var(--text-accent) !important; }
+html:is([data-theme="morning"], [data-theme="afternoon"]) :where([class*="text-emerald-"], [class*="text-green-"]) { color: var(--text-good) !important; }
+html:is([data-theme="morning"], [data-theme="afternoon"]) :where([class*="text-amber-"], [class*="text-orange-"]) { color: var(--text-watch) !important; }
+html:is([data-theme="morning"], [data-theme="afternoon"]) :where([class*="text-rose-"], [class*="text-red-"]) { color: var(--text-alert) !important; }
+html:is([data-theme="morning"], [data-theme="afternoon"]) :where([class*="text-violet-"], [class*="text-purple-"], [class*="text-indigo-"]) { color: var(--text-info) !important; }
+html[data-theme="evening"] .panel { background-color: var(--surface); border-color: var(--border); }
+html[data-theme="evening"] .tile { background-color: var(--surface-2); border-color: var(--border); }
+html[data-theme="evening"] :where([class*="bg-slate-950"], [class*="bg-slate-900"]) { background-color: var(--surface-control) !important; }
+html[data-theme="evening"] :where([class*="bg-slate-800"]) { background-color: var(--surface-2) !important; }
+html[data-theme="evening"] :where([class*="bg-slate-700"]) { background-color: var(--surface-control) !important; }
+html[data-theme="evening"] :where([class*="border-slate-800"], [class*="border-slate-700"], [class*="border-slate-600"]) { border-color: var(--border) !important; }
+html[data-theme="evening"] :where([class*="border-sky-"], [class*="border-cyan-"]) { border-color: var(--border-accent) !important; }
+html[data-theme="evening"] :where([class*="border-emerald-"], [class*="border-amber-"], [class*="border-rose-"], [class*="border-violet-"]) { border-color: var(--border-status) !important; }
+html[data-theme="evening"] [class*="bg-[#"] { background-color: var(--surface) !important; }
