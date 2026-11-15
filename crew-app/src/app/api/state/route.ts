@@ -7,7 +7,13 @@ const appSettingsId = "__app__";
 
 export async function GET() {
   await connection();
-  return Response.json({ states: readStates(), sources: listSources() });
+  try {
+    const [states, sources] = await Promise.all([readStates(), listSources()]);
+    return Response.json({ states, sources, storage: process.env.SUPABASE_URL ? "supabase" : "local" });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Could not read saved data.";
+    return Response.json({ error: message }, { status: 503 });
+  }
 }
 
 export async function POST(request: Request) {
@@ -47,8 +53,11 @@ export async function POST(request: Request) {
 
   try {
     const sourceId = domain === "settings" ? "crew-entry" : "mixed-records";
-    writeStates(domain, states, sourceId);
-    return Response.json({ saved: Object.keys(states).length });
+    await writeStates(domain, states, sourceId);
+    return Response.json({
+      saved: Object.keys(states).length,
+      storage: process.env.SUPABASE_URL ? "supabase" : "local",
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Could not save state.";
     return Response.json({ error: message }, { status: 400 });

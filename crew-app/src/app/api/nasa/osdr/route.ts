@@ -50,7 +50,7 @@ export async function GET(request: Request) {
   if (query.length < 3) return Response.json({ error: "Enter at least 3 characters." }, { status: 400 });
 
   const queryKey = query.toLowerCase();
-  const cached = readNasaCache(queryKey);
+  const cached = await readNasaCache(queryKey);
   if (cached && Date.now() - Date.parse(cached.fetchedAt) < 6 * 60 * 60 * 1000) {
     return Response.json({ studies: cached.payload, fetchedAt: cached.fetchedAt, cached: true });
   }
@@ -68,7 +68,7 @@ export async function GET(request: Request) {
     if (!response.ok) throw new Error(`NASA OSDR returned ${response.status}.`);
     const raw = await response.json() as unknown;
     const studies = normalizeStudies(raw, query);
-    writeNasaCache(queryKey, studies);
+    await writeNasaCache(queryKey, studies);
     return Response.json({ studies, fetchedAt: new Date().toISOString(), cached: false });
   } catch (error) {
     if (cached) {

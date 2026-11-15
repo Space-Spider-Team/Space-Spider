@@ -1,15 +1,22 @@
-SageCare is a Next.js crew health prototype. Crew logs and monitoring entries are stored in SQLite on the app server. NASA OSDR study metadata can be searched from Monitoring and is cached in the same database.
+SageCare is a Next.js crew health prototype. When configured, Supabase stores crew logs, monitoring entries, source records, and the NASA OSDR search cache. SQLite remains available as a local fallback.
 
 ## Requirements
 
-- Node.js 22.13 or later (`node:sqlite`)
+- Node.js 22.13 or later (`node:sqlite` local fallback)
 - npm
 
-The database defaults to `data/sagecare.sqlite`. Set `SAGECARE_DB_PATH` to move it. SQLite files are excluded from git.
+## Supabase setup
+
+1. Create a Supabase project and open its SQL Editor.
+2. Run [`supabase/migrations/20261115_app_storage.sql`](supabase/migrations/20261115_app_storage.sql).
+3. Copy `.env.example` to `.env.local` and set `SUPABASE_URL` and `SUPABASE_SECRET_KEY` from the project settings.
+4. Restart the app. State, sources, and NASA cache now read from and write to Supabase.
+
+The secret key is server-only. Never use a `NEXT_PUBLIC_` prefix or commit `.env.local`. If Supabase is unset, the app uses `data/sagecare.sqlite`; set `SAGECARE_DB_PATH` to move that file. SQLite files are excluded from git. On the first Supabase read, existing SQLite state is copied over if the Supabase state table is empty.
 
 Existing browser logs are imported the first time the server database is empty. Browser storage remains as a local fallback if the API is unavailable.
 
-NASA OSDR search returns study metadata only. Human research files may have controlled access; this app does not import private astronaut medical records. Profile and sensor readings remain simulated unless entered by a crew member. Do not expose this unauthenticated prototype to a public network or store real patient data in it.
+NASA OSDR search returns study metadata only. Human research files may have controlled access; this app does not import private astronaut medical records. Profile and sensor readings remain simulated unless entered by a crew member. This prototype has no sign-in: the server-only Supabase secret bypasses RLS, so keep the app private and do not store real patient data until user authentication and access controls are added.
 
 ## Getting Started
 
