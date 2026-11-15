@@ -1,11 +1,7 @@
 import { connection } from "next/server";
 import { PROFILES } from "@/lib/crew";
-<<<<<<< HEAD
 import { listSources, readStates, storageBackend, writeStates, type StateDomain } from "@/lib/server/database";
-=======
 import { dayKey, parseLog } from "@/lib/records";
-import { listSources, readStates, writeStates, type StateDomain } from "@/lib/server/database";
->>>>>>> eda41f565b95dc96f82eff527788bd07f1f56d8e
 
 const profileIds = new Set(PROFILES.map((profile) => profile.id));
 const appSettingsId = "__app__";

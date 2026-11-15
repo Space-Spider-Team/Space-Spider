@@ -241,11 +241,26 @@ function ScannerModal({
 
 export function NutritionView() {
   const { profile, meals, fluid, drinkFluid, foodWater, totals, addMeal, removeMeal, addFluid } = useCrew();
+  const dailyMicronutrients = ["Iron", "Sodium", "Potassium", "Phosphorus", "Calcium", "Vitamin C"].map((label) => {
+    let amount = 0;
+    let missing = 0;
+    let approximate = false;
+    for (const meal of meals) {
+      const nutrient = meal.nutrients?.find((item) => item.label === label);
+      if (!nutrient || nutrient.amount === null) {
+        missing += 1;
+        continue;
+      }
+      amount += nutrient.amount;
+      approximate ||= nutrient.qualifier === "approx";
+    }
+    return { label, amount: Number(amount.toFixed(2)), missing, approximate };
+  });
 
   const [scanOpen, setScanOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [selectedId, setSelectedId] = useState<string | null>("teriyaki");
-  const [category, setCategory] = useState<MealCategory>("lunch");
+  const [selectedId, setSelectedId] = useState<string | null>("scrambled-eggs");
+  const [category, setCategory] = useState<MealCategory>("breakfast");
   const [portions, setPortions] = useState<number>(1);
   const [notice, setNotice] = useState<{ tone: Tone; text: string } | null>(null);
 
@@ -724,6 +739,28 @@ export function NutritionView() {
                     </div>
                   );
                 })}
+              </div>
+
+              <div className="mt-5 border-t border-slate-800/80 pt-4">
+                <div className="mb-3">
+                  <h3 className="text-sm font-semibold text-white">Minerals &amp; vitamin</h3>
+                  <p className="mt-1 text-[10px] leading-4 text-slate-500">Daily totals from foods logged today · values use the provided food references.</p>
+                </div>
+                <dl className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {dailyMicronutrients.map((nutrient) => (
+                    <div key={nutrient.label} className="tile rounded-xl px-3 py-2.5">
+                      <dt className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">{nutrient.label}</dt>
+                      <dd className="mt-1 text-sm font-semibold text-white tabular-nums">
+                        {nutrient.approximate ? "~" : ""}{nutrient.amount} mg
+                      </dd>
+                      {nutrient.missing > 0 ? (
+                        <dd className="mt-0.5 text-[9px] leading-4 text-amber-300/80">
+                          {nutrient.amount > 0 ? "Partial total" : "Not reported"} · {nutrient.missing} food{nutrient.missing === 1 ? "" : "s"} missing value
+                        </dd>
+                      ) : null}
+                    </div>
+                  ))}
+                </dl>
               </div>
 
               <p className="mt-3 border-t border-slate-800/80 pt-3 text-[10px] leading-5 text-slate-500">

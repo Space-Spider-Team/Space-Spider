@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PROFILES } from "./crew";
+import { FOODS, PROFILES } from "./crew";
 import { calculateRequirements, energyWorking, estimatedEnergyRequirement, profileTargets } from "./nutrition";
 
 const male = { sex: "Male" as const, age: 30, heightCm: 180, weightKg: 70 };
@@ -38,6 +38,15 @@ describe("daily requirements", () => {
 });
 
 describe("crew profiles", () => {
+  it("limits meal choices and demo meals to the four requested foods", () => {
+    const expectedIds = ["scrambled-eggs", "almonds", "chicken-pineapple-salad", "cashews"];
+    expect(FOODS.map((food) => food.id)).toEqual(expectedIds);
+    for (const profile of PROFILES) {
+      expect(profile.seedMeals.map((meal) => meal.foodId)).toEqual(expectedIds);
+    }
+    expect(FOODS.map((food) => food.macros.energy)).toEqual([183.9, 165.2, 155.3, 150.8]);
+  });
+
   it("take their targets from the calculation", () => {
     for (const profile of PROFILES) {
       const expected = profileTargets({ sex: profile.sex, age: profile.age, heightCm: profile.heightCm, weightKg: profile.weightKg });

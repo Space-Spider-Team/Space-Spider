@@ -83,9 +83,10 @@ function readMeal(raw: unknown, day: string): MealEntry | null {
   if (!["breakfast", "lunch", "dinner", "snack"].includes(String(raw.category))) return null;
   const meal = raw as unknown as MealEntry;
   const food = FOODS.find((item) => item.id === meal.foodId);
+  // Meals outside the active catalogue are removed when stored logs are restored.
+  if (!food) return null;
   // Older entries have no date; they were shown as today's when they were saved.
   const date = typeof raw.date === "string" && DAY.test(raw.date) ? raw.date : day;
-  if (!food) return { ...meal, date };
   return {
     ...meal,
     date,

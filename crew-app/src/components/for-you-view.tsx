@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCrew } from "@/components/crew-provider";
-import { HrrChip, HrrList, Meter, RangeMeter, SectionLabel, TonePill, toneText } from "@/components/ui";
+import { HrrChip, Meter, RangeMeter, SectionLabel, TonePill, toneText } from "@/components/ui";
 import {
   FLUID_STEP,
   MACRO_META,
@@ -11,10 +11,7 @@ import {
   macroCap,
   pct,
   rangeStatus,
-  type HrrKey,
 } from "@/lib/crew";
-
-const FOR_YOU_HRR: HrrKey[] = ["cardio", "nutrition", "sleep", "behavior", "renal"];
 
 export function ForYouView() {
   const { profile, totals, fluid, drinkFluid, mood, moodTrack, addFluid, setMood } = useCrew();
@@ -26,7 +23,7 @@ export function ForYouView() {
   const hr = profile.metrics.find((metric) => metric.label === "Resting HR") ?? profile.metrics[0];
   const sleepMetric = profile.metrics.find((metric) => metric.label === "Sleep") ?? profile.metrics[3];
 
-    const moodLabel = MOOD_SCALE.find((item) => item.level === mood?.level)?.label;
+  const moodLabel = MOOD_SCALE.find((item) => item.level === mood?.level)?.label;
 
   return (
     <main className="px-4 py-5 sm:px-6 lg:px-10 lg:py-8">
@@ -120,10 +117,20 @@ export function ForYouView() {
                     ))}
                   </div>
                   <Link
-                    href={item.title.toLowerCase().includes("hydration") ? "/nutrition#hydration" : "/nutrition#daily-targets"}
+                    href={
+                      item.title.toLowerCase().includes("hydration")
+                        ? "/nutrition#hydration"
+                        : item.title.toLowerCase().includes("sleep")
+                          ? "/monitoring#sleep"
+                          : "/nutrition#daily-targets"
+                    }
                     className="mt-3 inline-flex min-h-10 items-center text-xs font-semibold text-sky-300 hover:text-sky-100"
                   >
-                    View nutrition details →
+                    {item.title.toLowerCase().includes("hydration")
+                      ? "View hydration details →"
+                      : item.title.toLowerCase().includes("sleep")
+                        ? "View sleep details →"
+                        : "View nutrition details →"}
                   </Link>
                 </article>
               ))}
@@ -131,8 +138,47 @@ export function ForYouView() {
           )}
         </section>
 
-        <div className="grid gap-6 lg:grid-cols-[1.35fr_1fr]">
-          <section className="panel rounded-[26px] p-5 sm:p-6">
+        <section aria-labelledby="hydration-heading" className="panel rounded-[26px] p-5 sm:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0 flex-1">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <div>
+                  <SectionLabel>Hydration</SectionLabel>
+                  <h2 id="hydration-heading" className="mt-1 text-lg font-semibold text-white">Daily fluid intake</h2>
+                </div>
+                <span className="text-sm font-bold text-sky-200 tabular-nums">{fluidPercent}%</span>
+              </div>
+              <p className="text-xl font-semibold text-white tabular-nums">
+                {fluid.toFixed(2)} L{" "}
+                <span className="text-xs font-medium text-slate-400">of {profile.targets.fluid.toFixed(1)} L minimum</span>
+              </p>
+              <div className="mt-2">
+                <Meter value={fluid} target={profile.targets.fluid} label="Hydration minimum" tone="cyan" height="h-2.5" />
+              </div>
+              <p className="mt-1.5 text-xs text-slate-400">{remaining.toFixed(2)} L remaining to the minimum</p>
+            </div>
+            <div className="flex shrink-0 gap-2 sm:w-52 sm:flex-col">
+              <button
+                type="button"
+                onClick={() => addFluid(FLUID_STEP)}
+                className="flex-1 rounded-xl border border-sky-400/30 bg-sky-500/15 px-3 py-2.5 text-sm font-semibold text-sky-100 transition-colors hover:border-sky-300/50 hover:bg-sky-500/25 hover:text-white"
+              >
+                +250 mL water
+              </button>
+              <button
+                type="button"
+                onClick={() => addFluid(-FLUID_STEP)}
+                disabled={drinkFluid <= 0}
+                className="flex-1 rounded-xl border border-slate-700/70 bg-slate-900/60 px-3 py-2.5 text-sm font-semibold text-slate-300 transition-colors hover:border-slate-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                −250 mL
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <div className="grid items-start gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+          <section className="panel w-full rounded-[26px] p-5 sm:p-6">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
                 <SectionLabel>Health snapshot</SectionLabel>
@@ -286,50 +332,10 @@ export function ForYouView() {
               </div>
             </section>
 
-            <section className="panel rounded-[26px] p-5">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <SectionLabel>Hydration</SectionLabel>
-                <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-slate-500 tabular-nums">
-                  {fluidPercent}%
-                </span>
-              </div>
-
-              <p className="text-2xl font-semibold tracking-tight text-white tabular-nums">
-                {fluid.toFixed(2)} L{" "}
-                <span className="text-xs font-medium text-slate-400">
-                  of {profile.targets.fluid.toFixed(1)} L minimum
-                </span>
-              </p>
-              <div className="mt-3">
-                <Meter value={fluid} target={profile.targets.fluid} label="Hydration minimum" tone="cyan" height="h-2.5" />
-              </div>
-              <p className="mt-2 text-xs text-slate-400">
-                {remaining.toFixed(2)} L remaining to the minimum intake
-              </p>
-
-              <div className="mt-4 flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => addFluid(FLUID_STEP)}
-                  className="flex-1 rounded-xl border border-sky-400/30 bg-sky-500/15 px-3 py-2.5 text-sm font-semibold text-sky-100 transition-colors hover:border-sky-300/50 hover:bg-sky-500/25 hover:text-white"
-                >
-                  +250 mL
-                </button>
-                <button
-                  type="button"
-                  onClick={() => addFluid(-FLUID_STEP)}
-                  disabled={drinkFluid <= 0}
-                  className="rounded-xl border border-slate-700/70 bg-slate-900/60 px-3 py-2.5 text-sm font-semibold text-slate-300 transition-colors hover:border-slate-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  −250 mL
-                </button>
-              </div>
-            </section>
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[1.35fr_1fr]">
-          <section className="panel rounded-[26px] p-5 sm:p-6">
+        <section className="panel mx-auto w-full max-w-4xl rounded-[26px] p-5 sm:p-6">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
                 <SectionLabel>Intake vs target</SectionLabel>
@@ -340,7 +346,7 @@ export function ForYouView() {
               </span>
             </div>
 
-            <div className="space-y-4">
+            <div className="divide-y divide-slate-800/80">
               {MACRO_META.map((macro) => {
                 const consumed = totals[macro.key];
                 const range = profile.ranges[macro.key];
@@ -358,43 +364,34 @@ export function ForYouView() {
                         : `${percent}% of target · ${Math.max(0, cap - consumed).toLocaleString()} ${macro.unit} remaining`;
 
                 return (
-                  <div key={macro.key}>
-                    <div className="mb-1.5 flex items-baseline justify-between gap-3">
-                      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-400">{macro.label}</p>
-                      <p className="text-xs text-slate-400 tabular-nums">
-                        <span className="font-semibold text-slate-100">{consumed.toLocaleString()}</span> / {goal}{" "}
-                        {macro.unit}
+                  <div key={macro.key} className="grid gap-2.5 py-3.5 sm:grid-cols-[minmax(100px,0.65fr)_minmax(150px,0.9fr)_minmax(220px,1.5fr)] sm:items-center sm:gap-4">
+                    <div className="flex items-center justify-between gap-3 sm:block">
+                      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-300">{macro.label}</p>
+                      <span className="text-[10px] font-bold text-sky-200 tabular-nums">{percent}% of target</span>
+                    </div>
+                    <p className="text-sm text-slate-300 tabular-nums">
+                      <span className="font-semibold text-white">{consumed.toLocaleString()}</span>
+                      <span className="text-slate-500"> / {goal} {macro.unit}</span>
+                    </p>
+                    <div>
+                      {range ? (
+                        <RangeMeter value={consumed} range={range} label={`${macro.label} intake`} tone="cyan" />
+                      ) : (
+                        <Meter value={consumed} target={cap} label={`${macro.label} target`} tone="cyan" />
+                      )}
+                      <p
+                        className={`mt-1.5 text-[10px] leading-4 tabular-nums ${
+                          status === "below" ? "text-amber-300/90" : status === "above" ? "text-sky-300/90" : "text-slate-500"
+                        }`}
+                      >
+                        {note}
                       </p>
                     </div>
-                    {range ? (
-                      <RangeMeter value={consumed} range={range} label={`${macro.label} intake`} tone="cyan" />
-                    ) : (
-                      <Meter value={consumed} target={cap} label={`${macro.label} target`} tone="cyan" />
-                    )}
-                    <p
-                      className={`mt-1 text-[10px] tabular-nums ${
-                        status === "below" ? "text-amber-300/90" : status === "above" ? "text-sky-300/90" : "text-slate-500"
-                      }`}
-                    >
-                      {note}
-                    </p>
                   </div>
                 );
               })}
             </div>
-          </section>
-
-          <section className="panel rounded-[26px] p-5 sm:p-6">
-            <div className="mb-4">
-              <SectionLabel>NASA HRR references</SectionLabel>
-              <h2 className="mt-1.5 text-xl font-semibold tracking-tight text-white">Why these parameters matter</h2>
-              <p className="mt-1 text-xs leading-5 text-slate-400">
-                Human Research Roadmap risks linked to the values on this page.
-              </p>
-            </div>
-            <HrrList keys={FOR_YOU_HRR} />
-          </section>
-        </div>
+        </section>
       </div>
     </main>
   );

@@ -106,8 +106,9 @@ describe("water in food", () => {
     ];
     expect(foodWaterLitres(meals)).toBe(0.101);
   });
-  it("adds nothing for foods without a water value", () => {
-    expect(foodWaterLitres([makeMealEntry(food("oatmeal"), "breakfast", 1, "", DAY)])).toBe(0);
+  it("adds nothing for entries without nutrient data", () => {
+    const entry = makeMealEntry(food("cashews"), "snack", 1, "", DAY);
+    expect(foodWaterLitres([{ ...entry, nutrients: [] }])).toBe(0);
     expect(foodWaterLitres([])).toBe(0);
   });
 });
