@@ -41,7 +41,7 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [Link](https://crew-app-beige.vercel.app/).
 
 Available project scripts:
 
