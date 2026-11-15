@@ -36,6 +36,7 @@
 - [ESA – Diet Tracker in Space](https://www.esa.int/articles/diet-tracker-in-space)
 - [NASA Podcast – Diet Like an Astronaut](https://www.nasa.gov/podcasts/houston-we-have-a-podcast/diet-like-an-astronaut/)
 - [NASA Podcast – Eat Like a Martian](https://www.nasa.gov/podcasts/houston-we-have-a-podcast/eat-like-a-martian/)
+- https://www.nasa.gov/missions/artemis/artemis-2/artemis-ii-whats-on-the-menu/
 
 ### Technical Standards, Datasets, and Tools
 
@@ -47,3 +48,5 @@
 - NASA-STD-3001, Volume 1
 - NASA-STD-3001, Volume 2, Revision F
 - *Radiation Risk Mitigation in Human Space Exploration* (2026)
+- https://www.nasa.gov/wp-content/uploads/2024/06/nasa-space-food-formulations-rehydratable.pdf?emrc=6ad49cf73a295
+- https://fdc.nal.usda.gov/food-search?type=Foundation
