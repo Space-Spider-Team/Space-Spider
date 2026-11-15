@@ -67,6 +67,7 @@ type CrewState = {
   vitaminDTaken: boolean;
   currentDay: string;
   dataSyncStatus: DataSyncStatus;
+  dataSyncError: string;
   reportDataSyncStatus: (status: DataSyncStatus) => void;
   hydrated: boolean;
 };
@@ -74,6 +75,18 @@ type CrewState = {
 const STORE_KEY = "sagecare.logs.v2";
 const PROFILE_KEY = "sagecare.profile.v2";
 const SETTINGS_KEY = "sagecare.settings.v1";
+
+async function responseError(response: Response, fallback: string): Promise<string> {
+  try {
+    const payload = await response.json() as { error?: unknown };
+    if (typeof payload.error === "string" && payload.error.trim()) {
+      return `${fallback} (${response.status}): ${payload.error}`;
+    }
+  } catch {
+    // Use the status code when the server returned a non-JSON response.
+  }
+  return `${fallback} (${response.status}).`;
+}
 
 const CrewContext = createContext<CrewState | null>(null);
 
@@ -109,8 +122,12 @@ export function CrewProvider({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
   const [currentDay, setCurrentDay] = useState("");
   const [dataSyncStatus, setDataSyncStatus] = useState<DataSyncStatus>("checking");
+  const [dataSyncError, setDataSyncError] = useState("");
   const saveQueue = useRef(Promise.resolve());
-  const reportDataSyncStatus = useCallback((status: DataSyncStatus) => setDataSyncStatus(status), []);
+  const reportDataSyncStatus = useCallback((status: DataSyncStatus) => {
+    setDataSyncStatus(status);
+    if (status !== "error") setDataSyncError("");
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -124,9 +141,11 @@ export function CrewProvider({ children }: { children: ReactNode }) {
           setDataSyncStatus(data.storage === "supabase" ? "supabase" : "local");
         } else {
           setDataSyncStatus("error");
+          setDataSyncError(await responseError(response, "Could not load saved data"));
         }
-      } catch {
+      } catch (error) {
         setDataSyncStatus("error");
+        setDataSyncError(error instanceof Error ? error.message : "Could not reach the save service.");
         // Keep working from this device if the server is temporarily unavailable.
       }
 
@@ -191,17 +210,19 @@ export function CrewProvider({ children }: { children: ReactNode }) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ domain: "crew", states: logs }),
         });
-        if (!logResponse.ok) throw new Error("Crew data was not saved to the database.");
+        if (!logResponse.ok) throw new Error(await responseError(logResponse, "Crew data was not saved"));
         const settingsResponse = await fetch("/api/state", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ domain: "settings", states: { __app__: { activeProfileId: activeId, nutritionEstimates } } }),
         });
-        if (!settingsResponse.ok) throw new Error("Profile selection was not saved.");
+        if (!settingsResponse.ok) throw new Error(await responseError(settingsResponse, "App settings were not saved"));
         const saved = await settingsResponse.json() as { storage?: string };
+        setDataSyncError("");
         setDataSyncStatus(saved.storage === "supabase" ? "supabase" : "local");
-      } catch {
+      } catch (error) {
         setDataSyncStatus("error");
+        setDataSyncError(error instanceof Error ? error.message : "The database did not confirm the save.");
       }
     };
     saveQueue.current = saveQueue.current.catch(() => undefined).then(save);
@@ -320,6 +341,7 @@ export function CrewProvider({ children }: { children: ReactNode }) {
     vitaminDTaken,
     currentDay,
     dataSyncStatus,
+    dataSyncError,
     reportDataSyncStatus,
     hydrated,
   };

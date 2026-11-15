@@ -14,7 +14,7 @@ const LINKS = [
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const { profile, profiles, selectProfile, dataSyncStatus } = useCrew();
+  const { profile, profiles, selectProfile, dataSyncStatus, dataSyncError } = useCrew();
   const [utcTime, setUtcTime] = useState("--:--:--");
   const [timePhase, setTimePhase] = useState("syncing");
 
@@ -102,7 +102,7 @@ export function SiteHeader() {
             data-status={dataSyncStatus}
             role="status"
             aria-live="polite"
-            title={dataSyncStatus === "error" ? "Changes remain in this browser, but the database did not confirm they were saved." : undefined}
+            title={dataSyncStatus === "error" ? `Changes remain in this browser. ${dataSyncError || "The database did not confirm they were saved."}` : undefined}
           >
             <span className="data-sync-badge__dot" aria-hidden="true" />
             {dataSyncStatus === "checking" ? "Checking storage"

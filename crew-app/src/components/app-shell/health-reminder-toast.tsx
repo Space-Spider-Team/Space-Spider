@@ -13,7 +13,9 @@ type Reminder = {
 export function HealthReminderToast() {
   const { profile, fluid, meals, mood, addFluid, currentDay, hydrated } = useCrew();
   const [reminder, setReminder] = useState<Reminder | null>(null);
+  const [audioUnlocked, setAudioUnlocked] = useState(false);
   const shownKey = useRef("");
+  const soundedReminder = useRef("");
   const reminderKey = `sagecare.health-reminder.${profile.id}.${currentDay}`;
 
   const dismiss = useCallback(() => {
@@ -24,6 +26,58 @@ export function HealthReminderToast() {
     }
     setReminder(null);
   }, [reminderKey]);
+
+  // Browsers require a user gesture before they allow sound. Track that gesture
+  // once so future reminders can play immediately without interrupting them.
+  useEffect(() => {
+    const unlock = () => setAudioUnlocked(true);
+    window.addEventListener("pointerdown", unlock, { once: true, passive: true });
+    window.addEventListener("keydown", unlock, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("keydown", unlock);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!reminder || !audioUnlocked) return;
+    const soundKey = `${reminderKey}.${reminder.title}`;
+    if (soundedReminder.current === soundKey) return;
+    soundedReminder.current = soundKey;
+
+    const AudioContextConstructor = window.AudioContext;
+    if (!AudioContextConstructor) return;
+    let context: AudioContext | undefined;
+    try {
+      context = new AudioContextConstructor();
+      const now = context.currentTime;
+      const master = context.createGain();
+      master.gain.setValueAtTime(0.0001, now);
+      master.gain.exponentialRampToValueAtTime(0.035, now + 0.045);
+      master.gain.exponentialRampToValueAtTime(0.0001, now + 0.62);
+      master.connect(context.destination);
+
+      // A quiet two-note sine chime keeps health reminders noticeable but soft.
+      [659.25, 880].forEach((frequency, index) => {
+        const oscillator = context!.createOscillator();
+        const noteGain = context!.createGain();
+        const start = now + index * 0.12;
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(frequency, start);
+        noteGain.gain.setValueAtTime(0.0001, start);
+        noteGain.gain.exponentialRampToValueAtTime(index === 0 ? 0.68 : 0.48, start + 0.025);
+        noteGain.gain.exponentialRampToValueAtTime(0.0001, start + 0.48);
+        oscillator.connect(noteGain);
+        noteGain.connect(master);
+        oscillator.start(start);
+        oscillator.stop(start + 0.5);
+      });
+      window.setTimeout(() => { void context?.close(); }, 800);
+    } catch {
+      // Notifications still work when audio is unavailable or blocked.
+      void context?.close();
+    }
+  }, [audioUnlocked, reminder, reminderKey]);
 
   useEffect(() => {
     if (!hydrated || shownKey.current === reminderKey) return;

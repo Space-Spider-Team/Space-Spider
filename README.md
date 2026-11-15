@@ -322,4 +322,11 @@ sagecare/
 
 ## 18. Team
 
-*Add names and roles here.*
+| Name | GitHub | Country | Role |
+|---|---|---|---|
+| Şule Hanne Kurt | [@shanne](https://github.com/shanne) | Turkey | Team owner |
+| Muhammad Burhan Ahmed | [@burhanahmed](https://github.com/burhanahmed) | Pakistan | Team member |
+| Razal Rasheed | [@rzl](https://github.com/rzl) | India | Team member |
+| Celina Sattler | [@celinasattler](https://github.com/celinasattler) | Austria | Team member |
+| Abhishek Gautam | [@abhishekghz](https://github.com/abhishekghz) | India | Team member |
+| Reema Alrashdi | [@reema23](https://github.com/reema23) | Saudi Arabia | Team member |
